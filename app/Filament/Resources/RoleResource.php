@@ -19,9 +19,14 @@ class RoleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $modelLabel = 'Função';
-    protected static ?string $pluralModelLabel = 'Funções';
-
+    
+    protected static ?string $pluralModelLabel = 'Gestão de Funções'; 
     protected static ?string $navigationGroup = 'Configurações';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 
     public static function form(Form $form): Form
     {
@@ -38,7 +43,7 @@ class RoleResource extends Resource
                     ->relationship('permissions', 'name')
                     ->multiple()
                     ->required()
-                    ->preload()->label('Permissão'),
+                    ->preload()->label('Permissão'), 
             ]);
     }
 
@@ -63,6 +68,7 @@ class RoleResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

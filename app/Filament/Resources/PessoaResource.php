@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\PessoaExporter;
 use App\Filament\Resources\PessoaResource\Pages;
 use App\Filament\Resources\PessoaResource\RelationManagers;
 use App\Models\Pessoa;
@@ -10,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Radio;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -18,51 +20,63 @@ class PessoaResource extends Resource
 {
     protected static ?string $model = Pessoa::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-plus';
+
+    protected static ?string $recordTitleAttribute = 'nome';
+    
+    protected static ?string $modelLabel = 'Gestão dos Beneficiario';
+    
+    protected static ?string $pluralModelLabel = 'Gestão dos Beneficiarios';
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('nome')
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
                     ->email()
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('bi')
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(14)
                     ->minLength(14),
                 Forms\Components\DatePicker::make('data_nascimento')
-                    ->required()
-                    ->closeOnDateSelection(),
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->closeOnDateSelection()
+                    ->minDate(now()->subYears(80))
+                    ->maxDate(now()->subYears(20)),
                 Forms\Components\Radio::make('genero')
                     ->options([
                         'Masculino' => 'Masculino',
                         'Feminino' => 'Feminino',
                         'Outro' => 'Outro',
                     ])
-                    ->preload()
-                    ->required(),
+                    ->required(fn (string $context): bool => $context === 'create'),
                 Forms\Components\Select::make('grau_academico')->options([
-                    'Ensino Geral',
-                    'Ensino Medio',
-                    'Bacharel',
-                    'Licenciado',
-                    'Msc',
-                    'PHD',
-                ])->required()
-                
-                ->preload(),
+                        'Ensino Geral' => 'Ensino Geral',
+                        'Ensino Medio' =>'Ensino Medio',
+                        'Bacharel'=>'Bacharel',
+                        'Licenciado'=>'Licenciado',
+                        'Msc'=>'Msc',
+                        'PHD'=>'PHD',
+                    ])
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->searchable()
+                    ->preload(),
                 Forms\Components\Textarea::make('morada')
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(65535)
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('telefone')
                     ->tel()
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->numeric()
                     ->maxLength(15)
                     ->minLength(9),
@@ -101,12 +115,18 @@ class PessoaResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    ExportBulkAction::make()
+                    ->label('Exportar Dado(s)')
+                    ->exporter(PessoaExporter::class)
+                    ->columnMapping(false)
+                    
                 ]),
             ]);
     }

@@ -19,7 +19,7 @@ class PermissionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $modelLabel = 'Permissão';
-    protected static ?string $pluralModelLabel = 'Permissões';
+    protected static ?string $pluralModelLabel = 'Gestão de Permissões';
 
     protected static ?string $navigationGroup = 'Configurações';
 
@@ -63,6 +63,7 @@ class PermissionResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

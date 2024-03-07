@@ -21,30 +21,44 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
-    protected static ?string $modelLabel = 'Usuario';
+    protected static ?string $modelLabel = 'Utilizador';
+    protected static ?string $pluralModelLabel = 'Gestão Utilizadores'; 
+
+    
+    protected static ?string $navigationGroup = 'Configurações';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255)->label("Nome Completo"),
                 Forms\Components\TextInput::make('email')
                     ->email()
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->unique(ignoreRecord:true)
                     ->maxLength(255), 
                 //Forms\Components\DateTimePicker::make('email_verified_at'),
                 Forms\Components\TextInput::make('password')
                     ->password()
+                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                    ->dehydrated(fn ($state) => filled($state))
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255)->label("Senha"),
+                    
                     Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name', function (Builder $query) {
                         return auth()->user()->hasRole('Admin') ? $query : $query->where('name', '!=', 'Admin');
                     })
                     ->multiple()
-                    ->required()
+                    ->searchable()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->preload(),
                 
                             ]);
@@ -74,6 +88,7 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

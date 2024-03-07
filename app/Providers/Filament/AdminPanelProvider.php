@@ -67,6 +67,8 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->plugins([
                 ActivitylogPlugin::make()
                 ->resource(AuditResource::class)
