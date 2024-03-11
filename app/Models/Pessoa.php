@@ -18,6 +18,7 @@ class Pessoa extends Model
         'bi',
         'data_nascimento',
         'genero',
+        'tipo_pessoa',
         'grau_academico',
         'morada',
         'telefone', 

@@ -28,7 +28,8 @@ class PessoaResource extends Resource
     protected static ?string $recordTitleAttribute = 'nome';
     
     protected static ?string $modelLabel = 'Beneficiario';
-    protected static ?int $navigationSort = 1;
+    //protected static ?int $navigationSort = 1;
+
     
     protected static ?string $pluralModelLabel = 'Gestão dos Beneficiarios';
     public static function getNavigationBadge(): ?string
@@ -101,11 +102,17 @@ class PessoaResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('nome')
-                    ->searchable(),
+                    ->searchable()
+                    ->label('Beneficiário')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('bi')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('tipo_pessoa')
+                    ->label('Tipo Beneficiário')
+                    ->searchable()
+                    ,
                 Tables\Columns\TextColumn::make('data_nascimento')
                     ->date(format: 'd/m/Y')
                     ->sortable(),
@@ -126,6 +133,54 @@ class PessoaResource extends Resource
             ])
             ->filters([
                 //
+                Tables\Filters\Filter::make('created_at')
+                    ->label('Intervalo de Data de Criação')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                        ->label('Inicio'),
+                        Forms\Components\DatePicker::make('created_until')
+                        ->label('Fim'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
+
+                    Tables\Filters\Filter::make('data_nascimento')
+                    ->label('Data de Nascimento')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                        ->label('Data de Nascimento Inicial'),
+                        Forms\Components\DatePicker::make('created_until')
+                        ->label('Data de Nascimento Final'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('data_nascimento', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('data_nascimento', '<=', $date),
+                            );
+                    }),
+
+                Tables\Filters\SelectFilter::make('tipo_pessoa')
+                    ->label('Tipo de Beneficiário')
+                    ->multiple()
+                    ->options([
+                        'Individual' => 'Individual',
+                        'Institucional' =>'Institucional',
+                        'Empresa' =>'Empresa',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
