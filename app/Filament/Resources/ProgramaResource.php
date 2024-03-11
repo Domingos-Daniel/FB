@@ -2,73 +2,81 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\Programas;
+use App\Filament\Exports\ProgramaExporter;
 use App\Filament\Resources\ProgramaResource\Pages;
 use App\Filament\Resources\ProgramaResource\RelationManagers;
 use App\Models\Programa;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProgramaResource extends Resource
 {
     protected static ?string $model = Programa::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?string $cluster = Programas::class;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    
+    protected static ?string $modelLabel = 'Programa Social';
+    protected static ?string $pluralModelLabel = 'Gestão de Programas';
+
+    protected static ?string $recordTitleAttribute = 'nome';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('nome')
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
                 Forms\Components\Textarea::make('descricao')
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(65535)
                     ->columnSpanFull(),
-                Forms\Components\Select::make('area_foco')->options([
-                        'educacao',
-                        'saude', 
-                        'infraestrutura',
+                Forms\Components\Select::make('area_foco')
+                    ->options([
+                        'Educação' => 'Educação',
+                        'Saúde' => 'Saúde',
+                        'Infraestrutura' => 'Infraestrutura',
                     ])
-                    ->required()
-                    ->multiple(),
-                Forms\Components\Select::make('publico_alvo')->options([
-                        'estudantes',
-                        'empresa',
+                    //->multiple()
+                    ->required(fn (string $context): bool => $context === 'create'),
+                Forms\Components\Select::make('publico_alvo')
+                    ->options([
+                        'Estudantes' => 'Estudantes',
+                        'Empresa' => 'Empresa',
                     ])
-                    ->required()
-                    ->preload()
-                    ->multiple(),
+                    ->required(fn (string $context): bool => $context === 'create')
+                    //->multiple()
+                    ->preload(),
                 Forms\Components\Textarea::make('objetivo')
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(65535)
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('metas')
                     ->maxLength(65535)
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('orcamento')
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->numeric(),
-                Forms\Components\DatePicker::make('data_inicio')
-                    ->required(),
-                Forms\Components\DatePicker::make('data_fim')
-                    ->required(),
                 Forms\Components\TextInput::make('responsavel')
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
-                Forms\Components\Select::make('status')->options([
-                        'pendente',
-                        'visto',
-                        'aprovado',
-                        'reprovado',
-                        'expirado',
-                    ])->required()
-                    ->preload(),
             ]);
     }
 
@@ -85,15 +93,7 @@ class ProgramaResource extends Resource
                 Tables\Columns\TextColumn::make('orcamento')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('data_inicio')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('data_fim')
-                    ->date()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('responsavel')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('status')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -108,12 +108,17 @@ class ProgramaResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    ExportBulkAction::make()
+                    ->label('Exportar Dado(s)')
+                    ->exporter(ProgramaExporter::class)
+                    ->columnMapping(true)
                 ]),
             ]);
     }
@@ -123,5 +128,15 @@ class ProgramaResource extends Resource
         return [
             'index' => Pages\ManageProgramas::route('/'),
         ];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string | Htmlable
+    {
+        return $record->nome;
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['nome', 'responsavel'];
     }
 }

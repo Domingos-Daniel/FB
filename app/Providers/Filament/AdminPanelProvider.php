@@ -41,10 +41,11 @@ class AdminPanelProvider extends PanelProvider
             ->font('Poppins')
             ->brandName('Fundação Brilhante')
             ->brandLogo(asset('fb.png'))
-            ->brandLogoHeight(fn () => auth()->check() ? '3rem': '3.5rem')
+            ->brandLogoHeight(fn () => auth()->check() ? '2.5rem': '3.5rem')
             
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
             ->pages([
                 Pages\Dashboard::class,
             ])

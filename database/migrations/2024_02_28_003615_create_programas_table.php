@@ -19,7 +19,8 @@ return new class extends Migration
             $table->string('publico_alvo');
             $table->text('objetivo');
             $table->text('metas');
-            $table->decimal('orcamento', 10, 2);
+            $table->unsignedBigInteger('id_orcamento');
+            $table->foreign('id_orcamento')->references('id')->on('orcamentos');
             $table->date('data_inicio');
             $table->date('data_fim');
             $table->string('responsavel');

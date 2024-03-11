@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Exports\PessoaExporter;
 use App\Filament\Resources\PessoaResource\Pages;
 use App\Filament\Resources\PessoaResource\RelationManagers;
+use App\Filament\Resources\PessoaResource\RelationManagers\ProgramaPessoaRelationManager;
 use App\Models\Pessoa;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,7 +14,9 @@ use Filament\Forms\Components\Radio;
 use Filament\Tables;
 use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PessoaResource extends Resource
@@ -24,7 +27,8 @@ class PessoaResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'nome';
     
-    protected static ?string $modelLabel = 'Gestão dos Beneficiario';
+    protected static ?string $modelLabel = 'Beneficiario';
+    protected static ?int $navigationSort = 1;
     
     protected static ?string $pluralModelLabel = 'Gestão dos Beneficiarios';
     public static function getNavigationBadge(): ?string
@@ -70,6 +74,15 @@ class PessoaResource extends Resource
                     ->required(fn (string $context): bool => $context === 'create')
                     ->searchable()
                     ->preload(),
+                 Forms\Components\Select::make('tipo_pessoa')->options([
+                        'Individual' => 'Individual',
+                        'Institucional' =>'Institucional',
+                        'Empresa' =>'Empresa',
+                    ])
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->searchable()
+                    ->preload(),
+
                 Forms\Components\Textarea::make('morada')
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(65535)
@@ -125,10 +138,18 @@ class PessoaResource extends Resource
                     ExportBulkAction::make()
                     ->label('Exportar Dado(s)')
                     ->exporter(PessoaExporter::class)
-                    ->columnMapping(false)
+                    ->columnMapping(true)
                     
                 ]),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+            ProgramaPessoaRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
@@ -136,5 +157,15 @@ class PessoaResource extends Resource
         return [
             'index' => Pages\ManagePessoas::route('/'),
         ];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string | Htmlable
+    {
+        return $record->nome;
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['nome', 'email', 'morada', 'telefone'];
     }
 }
