@@ -5,24 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Orcamento extends Model
+class OrcamentoPrograma extends Model
 {
     use HasFactory;
-
     protected $fillable = [
+        'id',
         'id_programa',
-        'valor',
-        'descricao',
+        'id_orcamento',
         'created_at',
         'updated_at',
     ];
-    public function programa()
+
+    public function orcamento()
     {
-        return $this->belongsTo(Programa::class);
+        return $this->belongsTo(Orcamento::class);
     }
 
-    public function orcamentoProgramas()
-    {
-        return $this->hasMany(OrcamentoPrograma::class);
-    }
 }

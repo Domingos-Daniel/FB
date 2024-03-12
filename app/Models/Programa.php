@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Subprograma;
 
 class Programa extends Model
 {
@@ -18,7 +19,6 @@ class Programa extends Model
         'publico_alvo',
         'objetivo',
         'metas',
-        'id_orcamento',
         'responsavel', 
     ];
 
@@ -29,6 +29,16 @@ class Programa extends Model
     public function pessoas()
     {
         return $this->belongsToMany(Pessoa::class, 'programa_pessoa');
+    }
+
+    public function orcamento()
+    {
+        return $this->hasOne(Orcamento::class);
+    }
+
+    public function subprogramas()
+    {
+        return $this->hasMany(Subprograma::class);
     }
 
     public function pessoa() 

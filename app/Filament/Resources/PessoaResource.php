@@ -29,8 +29,6 @@ class PessoaResource extends Resource
     
     protected static ?string $modelLabel = 'Beneficiario';
     //protected static ?int $navigationSort = 1;
-
-    
     protected static ?string $pluralModelLabel = 'Gestão dos Beneficiarios';
     public static function getNavigationBadge(): ?string
     {
@@ -49,15 +47,19 @@ class PessoaResource extends Resource
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('bi')
+                    ->label('BI / Nº de Identificação Fiscal')
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(14)
                     ->minLength(14),
                 Forms\Components\DatePicker::make('data_nascimento')
                     ->required(fn (string $context): bool => $context === 'create')
+                    ->date()
+                    ->label('Data de Nascimento / Data de Criação')
                     ->closeOnDateSelection()
                     ->minDate(now()->subYears(80))
                     ->maxDate(now()->subYears(20)),
                 Forms\Components\Radio::make('genero')
+                    ->label('Género')
                     ->options([
                         'Masculino' => 'Masculino',
                         'Feminino' => 'Feminino',
@@ -71,6 +73,7 @@ class PessoaResource extends Resource
                         'Licenciado'=>'Licenciado',
                         'Msc'=>'Msc',
                         'PHD'=>'PHD',
+                        'Outro'=>'Outro',
                     ])
                     ->required(fn (string $context): bool => $context === 'create')
                     ->searchable()
@@ -85,14 +88,17 @@ class PessoaResource extends Resource
                     ->preload(),
 
                 Forms\Components\Textarea::make('morada')
+                    ->label('Morada / Endereço')
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(65535)
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('telefone')
+                    ->label('Telefone / Celular')
                     ->tel()
+                    ->telRegex('/^\d{9}$/')
                     ->required(fn (string $context): bool => $context === 'create')
                     ->numeric()
-                    ->maxLength(15)
+                    ->maxLength(9)
                     ->minLength(9),
             ]);
     }

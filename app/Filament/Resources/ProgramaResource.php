@@ -70,10 +70,18 @@ class ProgramaResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('metas')
                     ->maxLength(65535)
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('orcamento')
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->numeric(),
+                    ->columnSpanFull(), 
+
+                // Forms\Components\TextInput::make('orcamento')
+                //     ->required(fn (string $context): bool => $context === 'create')
+                //     ->numeric(),
+
+                // Forms\Components\Select::make('descricao')
+                //     ->relationship('orcamentos', 'descricao')
+                //     ->multiple()
+                //     ->required()
+                //     ->preload()->label('Descrição do Orcamento'), 
+
                 Forms\Components\TextInput::make('responsavel')
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
@@ -90,9 +98,9 @@ class ProgramaResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('publico_alvo')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('orcamento')
-                    ->numeric()
-                    ->sortable(),
+                // Tables\Columns\TextColumn::make('orcamento')
+                //     ->numeric()
+                //     ->sortable(),
                 Tables\Columns\TextColumn::make('responsavel')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')

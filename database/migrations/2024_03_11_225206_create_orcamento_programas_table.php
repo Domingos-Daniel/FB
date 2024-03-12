@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orcamentos', function (Blueprint $table) {
+        Schema::create('orcamento_programas', function (Blueprint $table) {
             $table->id();
-            $table->decimal('valor', 10, 2);
+            $table->unsignedBigInteger('id_programa');
+            $table->unsignedBigInteger('id_orcamento');
+            $table->foreign('id_programa')->references('id')->on('programas');
+            $table->foreign('id_orcamento')->references('id')->on('orcamentos');
             $table->timestamps();
         });
     }
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orcamentos');
+        Schema::dropIfExists('orcamento_programas');
     }
 };
