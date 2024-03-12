@@ -24,7 +24,8 @@ class OrcamentoResource extends Resource
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     
     protected static ?string $modelLabel = 'Orçamento';
-    protected static ?string $pluralModelLabel = 'Gestão de Orçamentos';
+    protected static ?string $pluralModelLabel = 'Orçamentos';
+    protected static ?string $navigationGroup = 'Gestão Orcamental';
     protected static ?string $cluster = Programas::class; 
 
     public static function form(Form $form): Form

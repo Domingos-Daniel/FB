@@ -9,15 +9,16 @@ class Subprograma extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
+    protected $fillable = [ 
         'id_programa', 
         'designacao', 
         'valor', 
-        'orcamento'
+        'created_at', 
+        'updated_at'
     ];
 
     public function programa()
     {
-        return $this->belongsTo(Programa::class);
+        return $this->belongsTo(Programa::class, 'id_programa');
     }
 }

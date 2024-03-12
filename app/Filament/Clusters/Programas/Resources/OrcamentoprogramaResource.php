@@ -3,11 +3,11 @@
 namespace App\Filament\Clusters\Programas\Resources;
 
 use App\Filament\Clusters\Programas;
-use App\Filament\Clusters\Programas\Resources\SubprogramaResource\Pages;
-use App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers;
+use App\Filament\Clusters\Programas\Resources\OrcamentoprogramaResource\Pages;
+use App\Filament\Clusters\Programas\Resources\OrcamentoprogramaResource\RelationManagers;
+use App\Models\Orcamentoprograma;
 use App\Models\Programa;
 use App\Models\Orcamento;
-use App\Models\Subprograma;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
@@ -17,20 +17,27 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class SubprogramaResource extends Resource
+class OrcamentoprogramaResource extends Resource
 {
-    protected static ?string $model = Subprograma::class;
+    protected static ?string $model = Orcamentoprograma::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationParentItem = 'Orcamento';
+    protected static ?string $modelLabel = 'Atribuir Orçamento';
+    protected static ?string $pluralModelLabel = 'Atribuir Orçamentos'; //Gestão de Orçamentos;
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-    
+ 
+    protected static ?string $navigationGroup = 'Gestão Orcamental';
+
     protected static ?string $cluster = Programas::class;
 
     public static function form(Form $form): Form
     {
+
         $programas = Programa::pluck('nome', 'id')->toArray();
         $orcamentos = Orcamento::pluck('valor', 'id')->toArray();
+
         return $form
             ->schema([
                 Forms\Components\Select::make('id_programa')
@@ -39,13 +46,18 @@ class SubprogramaResource extends Resource
                     ->label("Selecione o Programa Social")
                     ->preload()
                     ->required(fn (string $context): bool => $context === 'create'),
-                Forms\Components\TextInput::make('designacao')
-                    ->label("Designação")
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('valor')
-                    ->required()
-                    ->numeric(),
+                Forms\Components\Select::make('id_orcamento')
+                    ->options($orcamentos)
+                    ->label("Selecione o Orçamento")
+                    ->preload()
+                    ->searchable()
+                    ->required(fn (string $context): bool => $context === 'create'),
+                // Forms\Components\TextInput::make('id_programa')
+                //     ->required()
+                //     ->numeric(),
+                // Forms\Components\TextInput::make('id_orcamento')
+                //     ->required()
+                //     ->numeric(),
             ]);
     }
 
@@ -55,12 +67,20 @@ class SubprogramaResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id_programa')
                     ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('programa.nome')
+                    ->label('Programa Associado')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('designacao')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('valor')
+                Tables\Columns\TextColumn::make('orcamento.valor')
+                    ->label('Orçamento do Programa')
                     ->numeric()
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('id_orcamento')
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -87,7 +107,7 @@ class SubprogramaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageSubprogramas::route('/'),
+            'index' => Pages\ManageOrcamentoprogramas::route('/'),
         ];
     }
 }

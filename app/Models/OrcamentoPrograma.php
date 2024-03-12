@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\Orcamento;
 class OrcamentoPrograma extends Model
 {
     use HasFactory;
@@ -18,7 +18,12 @@ class OrcamentoPrograma extends Model
 
     public function orcamento()
     {
-        return $this->belongsTo(Orcamento::class);
+        return $this->belongsTo(Orcamento::class, 'id_orcamento');
+    }
+
+    public function programa()
+    {
+        return $this->belongsTo(Programa::class, 'id_programa');
     }
 
 }
