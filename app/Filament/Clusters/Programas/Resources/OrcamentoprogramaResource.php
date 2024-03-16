@@ -39,7 +39,7 @@ class OrcamentoprogramaResource extends Resource
         $orcamentos = Orcamento::pluck('valor', 'id')->toArray();
 
         return $form
-            ->schema([
+            ->schema([ 
                 Forms\Components\Select::make('id_programa')
                     ->options($programas)
                     ->searchable()

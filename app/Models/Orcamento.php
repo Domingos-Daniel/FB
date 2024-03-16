@@ -18,7 +18,12 @@ class Orcamento extends Model
     ];
     public function programa()
     {
-        return $this->belongsTo(Programa::class);
+        return $this->belongsTo(Programa::class, 'id_programa');
+    }
+
+    public function subprograma()
+    {
+        return $this->hasMany(Subprograma::class, 'id_subprograma');
     }
 
     public function orcamentoProgramas()

@@ -117,8 +117,7 @@ class PessoaResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tipo_pessoa')
                     ->label('Tipo Beneficiário')
-                    ->searchable()
-                    ,
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('data_nascimento')
                     ->date(format: 'd/m/Y')
                     ->sortable(),

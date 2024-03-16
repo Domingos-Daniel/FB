@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Orcamento;
 
 class Subprograma extends Model
 {
@@ -16,6 +17,11 @@ class Subprograma extends Model
         'created_at', 
         'updated_at'
     ];
+
+    public function orcamento()
+    {
+        return $this->belongsTo(Orcamento::class, 'id_orcamento');
+    }
 
     public function programa()
     {
