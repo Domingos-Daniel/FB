@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use EightyNine\Approvals\Models\ApprovableModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Orcamento extends Model
+class Orcamento extends ApprovableModel
 {
     use HasFactory;
 
@@ -20,11 +21,12 @@ class Orcamento extends Model
     {
         return $this->belongsTo(Programa::class, 'id_programa');
     }
-
+ 
     public function subprograma()
     {
         return $this->hasMany(Subprograma::class, 'id_subprograma');
-    }
+    } 
+    
 
     public function orcamentoProgramas()
     {

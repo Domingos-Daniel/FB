@@ -16,6 +16,7 @@ class OrcamentoPrograma extends Model
         'updated_at',
     ];
 
+
     public function orcamento()
     {
         return $this->belongsTo(Orcamento::class, 'id_orcamento');

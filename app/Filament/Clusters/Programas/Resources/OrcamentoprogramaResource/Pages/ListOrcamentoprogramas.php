@@ -4,9 +4,9 @@ namespace App\Filament\Clusters\Programas\Resources\OrcamentoprogramaResource\Pa
 
 use App\Filament\Clusters\Programas\Resources\OrcamentoprogramaResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ManageRecords;
+use Filament\Resources\Pages\ListRecords;
 
-class ManageOrcamentoprogramas extends ManageRecords
+class ListOrcamentoprogramas extends ListRecords
 {
     protected static string $resource = OrcamentoprogramaResource::class;
 

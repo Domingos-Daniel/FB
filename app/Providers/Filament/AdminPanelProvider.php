@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Resources\AuditResource;
 use Filament\Http\Middleware\Authenticate;
+use EightyNine\Approvals\ApprovalPlugin;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
@@ -71,6 +72,7 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->plugins([
+                ApprovalPlugin::make(),
                 ActivitylogPlugin::make()
                 ->resource(AuditResource::class)
                 ->label('Log')

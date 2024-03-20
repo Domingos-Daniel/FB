@@ -14,16 +14,16 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Model;
 
 class ProgramaResource extends Resource
 {
     protected static ?string $model = Programa::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $cluster = Programas::class;
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     
@@ -41,7 +41,7 @@ class ProgramaResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nome')
+                 Forms\Components\TextInput::make('nome')
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
                 Forms\Components\Textarea::make('descricao')
@@ -131,10 +131,20 @@ class ProgramaResource extends Resource
             ]);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageProgramas::route('/'),
+            'index' => Pages\ListProgramas::route('/'),
+            'create' => Pages\CreatePrograma::route('/create'),
+            'view' => Pages\ViewPrograma::route('/{record}'),
+            'edit' => Pages\EditPrograma::route('/{record}/edit'),
         ];
     }
 

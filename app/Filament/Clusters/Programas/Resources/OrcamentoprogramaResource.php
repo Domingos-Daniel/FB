@@ -20,44 +20,40 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class OrcamentoprogramaResource extends Resource
 {
     protected static ?string $model = Orcamentoprograma::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
-    protected static ?string $navigationParentItem = 'Orcamento';
-    protected static ?string $modelLabel = 'Atribuir Orçamento';
-    protected static ?string $pluralModelLabel = 'Atribuir Orçamentos'; //Gestão de Orçamentos;
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
- 
+    protected static ?string $navigationParentItem = 'Orcamento';
+    protected static ?string $modelLabel = 'Atribuição';
+    protected static ?string $pluralModelLabel = 'Atribuir Orçamentos'; //Gestão de Orçamentos;
+    
     protected static ?string $navigationGroup = 'Gestão Orcamental';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $cluster = Programas::class;
 
     public static function form(Form $form): Form
     {
-
         $programas = Programa::pluck('nome', 'id')->toArray();
         $orcamentos = Orcamento::pluck('valor', 'id')->toArray();
-
         return $form
-            ->schema([ 
+            ->schema([
                 Forms\Components\Select::make('id_programa')
-                    ->options($programas)
-                    ->searchable()
-                    ->label("Selecione o Programa Social")
-                    ->preload()
-                    ->required(fn (string $context): bool => $context === 'create'),
-                Forms\Components\Select::make('id_orcamento')
-                    ->options($orcamentos)
-                    ->label("Selecione o Orçamento")
-                    ->preload()
-                    ->searchable()
-                    ->required(fn (string $context): bool => $context === 'create'),
-                // Forms\Components\TextInput::make('id_programa')
-                //     ->required()
-                //     ->numeric(),
-                // Forms\Components\TextInput::make('id_orcamento')
-                //     ->required()
-                //     ->numeric(),
+                ->options($programas)
+                ->searchable()
+                ->label("Selecione o Programa Social")
+                ->preload()
+                ->required(fn (string $context): bool => $context === 'create'),
+            Forms\Components\Select::make('id_orcamento')
+                ->options($orcamentos)
+                ->label("Selecione o Orçamento")
+                ->preload()
+                ->searchable()
+                ->required(fn (string $context): bool => $context === 'create'),
+            // Forms\Components\TextInput::make('id_programa')
+            //     ->required()
+            //     ->numeric(),
+            // Forms\Components\TextInput::make('id_orcamento')
+            //     ->required()
+            //     ->numeric(),
             ]);
     }
 
@@ -94,8 +90,8 @@ class OrcamentoprogramaResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -104,10 +100,20 @@ class OrcamentoprogramaResource extends Resource
             ]);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageOrcamentoprogramas::route('/'),
+            'index' => Pages\ListOrcamentoprogramas::route('/'),
+            'create' => Pages\CreateOrcamentoprograma::route('/create'),
+            'view' => Pages\ViewOrcamentoprograma::route('/{record}'),
+            'edit' => Pages\EditOrcamentoprograma::route('/{record}/edit'),
         ];
     }
 }

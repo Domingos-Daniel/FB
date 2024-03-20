@@ -5,15 +5,12 @@ namespace App\Filament\Clusters\Programas\Resources;
 use App\Filament\Clusters\Programas;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\Pages;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers;
-use App\Models\gasto;
 use App\Models\Programa;
+use App\Models\Subprograma;
 use App\Models\Orcamento;
 use App\Models\OrcamentoPrograma;
-use App\Models\Subprograma;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Notifications\Actions\Action;
-use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -26,9 +23,8 @@ class SubprogramaResource extends Resource
     protected static ?string $model = Subprograma::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-    
+
     protected static ?string $cluster = Programas::class;
 
     public static function form(Form $form): Form
@@ -51,17 +47,20 @@ class SubprogramaResource extends Resource
                 Forms\Components\TextInput::make('valor')
                     ->required()
                     ->numeric(),
-                // Forms\Components\Select::make('id_orcamento')
-                //     ->options($orcamentos)
-                //     ->label("Selecione o Orçamento")
-                //     ->preload()
-                //     ->searchable()
-                //     ->required(fn (string $context): bool => $context === 'create'),
+                Forms\Components\TextInput::make('id_orcamento')
+                    ->label("Orçamento do Programa (Somente Leitura)")
+                    ->default($orcamento->valor ?? '')  // Set the initial value (optional)
+                    ->disabled()
+                    ->required(fn (string $context): bool => $context === 'create'),
+                
             ]);
     }
-
-    public static function table(Table $table): Table
+    public function orcamentoPrograma()
     {
+      return $this->belongsTo(OrcamentoPrograma::class, 'id_programa', 'id_programa'); // Assuming foreign key is id_programa
+    }
+    public static function table(Table $table): Table
+    { 
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id_programa')
@@ -76,6 +75,14 @@ class SubprogramaResource extends Resource
                 Tables\Columns\TextColumn::make('valor')
                     ->numeric()
                     ->sortable(),
+                    Tables\Columns\TextColumn::make('orcamento_programa_valor')
+                ->label('Orçamento do Programa')
+                ->numeric()
+                ->sortable()
+                ->getStateUsing(function ($record) {
+                    // Acessar o valor do orçamento do programa a partir da relação definida no modelo Subprograma
+                    return optional($record->orcamentoPrograma->orcamento)->valor ?? '-';
+                  }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -89,8 +96,8 @@ class SubprogramaResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -99,49 +106,20 @@ class SubprogramaResource extends Resource
             ]);
     }
 
-    
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageSubprogramas::route('/'),
+            'index' => Pages\ListSubprogramas::route('/'),
+            'create' => Pages\CreateSubprograma::route('/create'),
+            'view' => Pages\ViewSubprograma::route('/{record}'),
+            'edit' => Pages\EditSubprograma::route('/{record}/edit'),
         ];
     }
-
-    public function beforeCreate($resource)
-    {
-        $orcamentoPrograma = OrcamentoPrograma::where('id_programa', $resource->id_programa)->first();
-    
-        if ($orcamentoPrograma) {
-            if ($resource->valor < $orcamentoPrograma->valor) {
-                $diferenca = $orcamentoPrograma->valor - $resource->valor;
-    
-                Gasto::create([
-                    'program_id' => $resource->id_programa,
-                    'subprogram_id' => $resource->getKey(),
-                    'orcamento_id' => $orcamentoPrograma->id,
-                    'valor_gasto' => $diferenca,
-                ]);
-
-                Notification::make()
-                ->warning()
-                ->title('You don\'t have an active subscription!')
-                ->body('Choose a plan to continue.')
-                ->persistent()
-                ->actions([
-                    Action::make('subscribe')
-                        ->button()
-                        ->url(route('subscribe'), shouldOpenInNewTab: true),
-                ])
-                ->send();
-    
-                return parent::onSave($resource);
-            } else {
-                throw new \Exception("O valor do subprograma deve ser menor que o valor do programa.");
-            }
-        } else {
-            throw new \Exception("OrcamentoPrograma não encontrado para o programa especificado.");
-        }
-    }
-    
 }

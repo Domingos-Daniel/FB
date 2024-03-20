@@ -6,6 +6,7 @@ use App\Filament\Clusters\Programas;
 use App\Filament\Clusters\Programas\Resources\OrcamentoResource\Pages;
 use App\Filament\Clusters\Programas\Resources\OrcamentoResource\RelationManagers;
 use App\Models\Orcamento;
+use App\Models\Programa;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
@@ -14,19 +15,17 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Models\Programa;
 
 class OrcamentoResource extends Resource
 {
     protected static ?string $model = Orcamento::class;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-    
     protected static ?string $modelLabel = 'Orçamento';
     protected static ?string $pluralModelLabel = 'Orçamentos';
     protected static ?string $navigationGroup = 'Gestão Orcamental';
-    protected static ?string $cluster = Programas::class; 
+    protected static ?string $cluster = Programas::class;
 
     public static function form(Form $form): Form
     {
@@ -34,7 +33,7 @@ class OrcamentoResource extends Resource
 
         return $form
             ->schema([
-                // Forms\Components\TextInput::make('id_programa')
+                 // Forms\Components\TextInput::make('id_programa')
                 //     ->required()
                 //     ->numeric(),
                 // Forms\Components\Select::make('programa_id')
@@ -77,7 +76,6 @@ class OrcamentoResource extends Resource
                 //
             ])
             ->actions([
-                
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -89,10 +87,20 @@ class OrcamentoResource extends Resource
             ]);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageOrcamentos::route('/'),
+            'index' => Pages\ListOrcamentos::route('/'),
+            'create' => Pages\CreateOrcamento::route('/create'),
+            'view' => Pages\ViewOrcamento::route('/{record}'),
+            'edit' => Pages\EditOrcamento::route('/{record}/edit'),
         ];
     }
 }
