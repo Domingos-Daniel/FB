@@ -33,7 +33,7 @@ class Programa extends Model
 
     public function orcamento()
     {
-        return $this->hasOne(Orcamento::class);
+        return $this->hasOne(Orcamento::class, 'id_orcamento');
     }
 
     public function subprogramas()

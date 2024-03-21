@@ -5,6 +5,7 @@ namespace App\Filament\Clusters\Programas\Resources;
 use App\Filament\Clusters\Programas;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\Pages;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers;
+use App\Models\gasto;
 use App\Models\Programa;
 use App\Models\Subprograma;
 use App\Models\Orcamento;
@@ -17,6 +18,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Notification;
 
 class SubprogramaResource extends Resource
 {
@@ -31,6 +34,7 @@ class SubprogramaResource extends Resource
     {
         $programas = Programa::pluck('nome', 'id')->toArray();
         $orcamentos = Orcamento::pluck('valor', 'id')->toArray();
+        $record = Subprograma::find(1);
 
         return $form
             ->schema([
@@ -47,14 +51,13 @@ class SubprogramaResource extends Resource
                 Forms\Components\TextInput::make('valor')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('id_orcamento')
-                    ->label("Orçamento do Programa (Somente Leitura)")
-                    ->default($orcamento->valor ?? '')  // Set the initial value (optional)
-                    ->disabled()
-                    ->required(fn (string $context): bool => $context === 'create'),
                 
-            ]);
+                
+                
+            ])
+            ;
     }
+
     public function orcamentoPrograma()
     {
       return $this->belongsTo(OrcamentoPrograma::class, 'id_programa', 'id_programa'); // Assuming foreign key is id_programa
@@ -106,6 +109,7 @@ class SubprogramaResource extends Resource
             ]);
     }
 
+
     public static function getRelations(): array
     {
         return [
@@ -122,4 +126,6 @@ class SubprogramaResource extends Resource
             'edit' => Pages\EditSubprograma::route('/{record}/edit'),
         ];
     }
+
+   
 }

@@ -23,7 +23,11 @@ class Subprograma extends Model
         return $this->belongsTo(Orcamento::class, 'id_orcamento');
     }
 
-  
+    public function gasto()
+    {
+      return $this->hasMany(Gasto::class);
+    }
+    
 
     public function OrcamentoPrograma()
     {
