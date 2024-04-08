@@ -41,6 +41,7 @@ class SubprogramaResource extends Resource
                 Forms\Components\Select::make('id_programa')
                     ->options($programas)
                     ->searchable()
+                    ->native(false)
                     ->label("Selecione o Programa Social")
                     ->preload()
                     ->required(fn (string $context): bool => $context === 'create'),
@@ -51,19 +52,18 @@ class SubprogramaResource extends Resource
                 Forms\Components\TextInput::make('valor')
                     ->required()
                     ->numeric(),
-                
-                
-                
-            ])
-            ;
+
+
+
+            ]);
     }
 
     public function orcamentoPrograma()
     {
-      return $this->belongsTo(OrcamentoPrograma::class, 'id_programa', 'id_programa'); // Assuming foreign key is id_programa
+        return $this->belongsTo(OrcamentoPrograma::class, 'id_programa', 'id_programa'); // Assuming foreign key is id_programa
     }
     public static function table(Table $table): Table
-    { 
+    {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id_programa')
@@ -78,14 +78,22 @@ class SubprogramaResource extends Resource
                 Tables\Columns\TextColumn::make('valor')
                     ->numeric()
                     ->sortable(),
-                    Tables\Columns\TextColumn::make('orcamento_programa_valor')
-                ->label('Orçamento do Programa')
-                ->numeric()
-                ->sortable()
-                ->getStateUsing(function ($record) {
-                    // Acessar o valor do orçamento do programa a partir da relação definida no modelo Subprograma
-                    return optional($record->orcamentoPrograma->orcamento)->valor ?? '-';
-                  }),
+                Tables\Columns\TextColumn::make('orcamento_programa_valor')
+                    ->label('Orçamento Restante')
+                    ->numeric()
+                    ->sortable()
+                    ->getStateUsing(function ($record) {
+                        // Acessar o valor do orçamento do programa a partir da relação definida no modelo Subprograma
+                        $orcamentoProgramaValor = optional($record->orcamentoPrograma->orcamento)->valor ?? 0;
+                
+                        // Obtendo o valor do subprograma
+                        $valorSubprograma = $record->valor; 
+                
+                        // Calculando a diferença entre o valor da tabela orcamento e o valor do subprograma
+                        $diferenca = $orcamentoProgramaValor - $valorSubprograma;
+                
+                        return $diferenca;
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -126,6 +134,4 @@ class SubprogramaResource extends Resource
             'edit' => Pages\EditSubprograma::route('/{record}/edit'),
         ];
     }
-
-   
 }

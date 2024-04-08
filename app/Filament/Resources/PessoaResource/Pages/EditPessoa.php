@@ -4,19 +4,19 @@ namespace App\Filament\Resources\PessoaResource\Pages;
 
 use App\Filament\Resources\PessoaResource;
 use Filament\Actions;
-use Filament\Forms\Components\Builder\Block;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
-use Filament\Resources\Pages\ManageRecords;
+use Filament\Resources\Pages\EditRecord;
 
-class ManagePessoas extends ManageRecords
+class EditPessoa extends EditRecord
 {
     protected static string $resource = PessoaResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\ViewAction::make(),
+            Actions\DeleteAction::make(),
         ];
     }
 
@@ -24,8 +24,8 @@ class ManagePessoas extends ManageRecords
     {
         return Notification::make()
             ->success()
-            ->title('Beneficiário Actualizado')
-            ->body('O beneficiário foi editado com sucesso.')
+            ->title('Beneficiario Editado')
+            ->body('O Beneficiario foi editado com sucesso.')
             ->actions([
                 Action::make('view')
                     ->label('Visualizar')

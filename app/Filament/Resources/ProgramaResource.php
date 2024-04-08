@@ -7,6 +7,7 @@ use App\Filament\Exports\ProgramaExporter;
 use App\Filament\Resources\ProgramaResource\Pages;
 use App\Filament\Resources\ProgramaResource\RelationManagers;
 use App\Models\Programa;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
@@ -84,8 +85,17 @@ class ProgramaResource extends Resource
 
                 Forms\Components\TextInput::make('responsavel')
                     ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(255),
-            ]);
+                    ->maxLength(255), 
+                Forms\Components\Select::make('responsavel')
+                ->required(fn (string $context): bool => $context === 'create')
+                ->options(
+                    User::whereHas('roles', function ($query) {
+                        $query->where('name', 'manager');
+                    })->pluck('name', 'id')
+                )
+                ->label('Responsável')
+                ->searchable(),
+            ]); 
     }
 
     public static function table(Table $table): Table

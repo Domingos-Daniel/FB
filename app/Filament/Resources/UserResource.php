@@ -4,11 +4,13 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
+use App\Models\Role;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -22,8 +24,8 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $modelLabel = 'Utilizador';
-    protected static ?string $pluralModelLabel = 'Gestão Utilizadores'; 
-    
+    protected static ?string $pluralModelLabel = 'Gestão Utilizadores';
+
     protected static ?string $navigationGroup = 'Configurações';
 
     public static function getNavigationBadge(): ?string
@@ -41,8 +43,8 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required(fn (string $context): bool => $context === 'create')
-                    ->unique(ignoreRecord:true)
-                    ->maxLength(255), 
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(255),
                 //Forms\Components\DateTimePicker::make('email_verified_at'),
                 Forms\Components\TextInput::make('password')
                     ->password()
@@ -50,8 +52,8 @@ class UserResource extends Resource
                     ->dehydrated(fn ($state) => filled($state))
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255)->label("Senha"),
-                    
-                    Forms\Components\Select::make('roles')
+
+                Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name', function (Builder $query) {
                         return auth()->user()->hasRole('Admin') ? $query : $query->where('name', '!=', 'Admin');
                     })
@@ -59,8 +61,8 @@ class UserResource extends Resource
                     ->searchable()
                     ->required(fn (string $context): bool => $context === 'create')
                     ->preload(),
-                
-                            ]);
+
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -71,21 +73,33 @@ class UserResource extends Resource
                     ->searchable()->label("Nome Completo"),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('role.name')
+                    ->label('Programa Associado')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime(format:"d/m/Y H:i:s")
+                    ->dateTime(format: "d/m/Y H:i:s")
                     ->sortable()->label("Data Validado"),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime(format:"d/m/Y H:i:s")
+                    ->dateTime(format: "d/m/Y H:i:s")
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime(format:"d/m/Y H:i:s")
+                    ->dateTime(format: "d/m/Y H:i:s")
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
+
+                SelectFilter::make('Funcao')
+                    ->options(Role::pluck('name', 'id'))
+                    ->query(function ($query) {
+                        $request = app('request');
+                        $value = $request->get('role'); // Access selected role from request
+                        // ... your filtering logic using $value ...
+                    }),
             ])
+
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
@@ -116,10 +130,10 @@ class UserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return auth()->user()->hasRole('Admin')
-        ? parent::getEloquentQuery()
-        : parent::getEloquentQuery()->whereHas(
-            'roles',
-            fn (Builder $query)=>$query->where('name', '!=', 'Admin')
-        );
+            ? parent::getEloquentQuery()
+            : parent::getEloquentQuery()->whereHas(
+                'roles',
+                fn (Builder $query) => $query->where('name', '!=', 'Admin')
+            );
     }
 }
