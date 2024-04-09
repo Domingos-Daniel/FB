@@ -93,16 +93,14 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
-
                 Tables\Filters\SelectFilter::make('roles.name')
-  ->relationship('roles', 'name')
-  ->options(function () {
-    return Role::pluck('name', 'id')->toArray();
-  })
-  ->label('Função')
-  ->multiple() // Habilitar multi-seleção
-  ->placeholder('Pesquisar funções...'), // Texto de placeholder na caixa de texto
+                    ->relationship('roles', 'name')
+                    ->options(function () {
+                        return Role::pluck('name', 'id')->toArray();
+                    })
+                    ->label('Função')
+                    ->multiple() // Habilitar multi-seleção
+                    ->placeholder('Pesquisar funções...'), // Texto de placeholder na caixa de texto
 
 
             ])

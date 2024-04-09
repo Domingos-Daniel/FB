@@ -12,6 +12,7 @@ use App\Models\Orcamento;
 use App\Models\OrcamentoPrograma;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -41,10 +42,42 @@ class SubprogramaResource extends Resource
                 Forms\Components\Select::make('id_programa')
                     ->options($programas)
                     ->searchable()
+                    ->live()
                     ->native(false)
                     ->label("Selecione o Programa Social")
                     ->preload()
                     ->required(fn (string $context): bool => $context === 'create'),
+                Forms\Components\Select::make('orcamento_id')
+                    ->label('Valor actual disponivel para este programa')
+                    ->suffixIcon('heroicon-m-banknotes')
+                    ->suffixIconColor('success')
+                    ->options(function (Get $get) {
+                        $id_programa = $get('id_programa');
+                        
+                        // Carregar o valor do orçamento com base no programa social selecionado
+                        $valor_orcamento = Orcamento::where('id', $id_programa)->pluck('valor')->first();
+                        
+                        // Calcular a quantidade de valor gasto para este programa
+                        $valor_gasto = Gasto::where('id_programa', $id_programa)->sum('valor_gasto');
+                        
+                        // Subtrair a quantidade de valor gasto do valor do orçamento
+                        $valor_disponivel = $valor_orcamento - $valor_gasto;
+                        
+                        // Retornar o valor disponível para o orçamento
+                        return [$id_programa => $valor_disponivel];
+                    })
+                    ->default(function (Get $get) {
+                        $id_programa = $get('id_programa');
+                        
+                        // Carregar o valor do orçamento com base no programa social selecionado
+                        $valor_orcamento = Orcamento::where('id', $id_programa)->pluck('valor')->first();
+                        
+                        // Retornar o valor do orçamento como a opção padrão
+                        return $valor_orcamento;
+                    })
+                    ->disabled()
+                    ->selectablePlaceholder(false),
+
                 Forms\Components\TextInput::make('designacao')
                     ->label("Designação")
                     ->required()
@@ -52,9 +85,6 @@ class SubprogramaResource extends Resource
                 Forms\Components\TextInput::make('valor')
                     ->required()
                     ->numeric(),
-
-
-
             ]);
     }
 
