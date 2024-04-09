@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
+use Illuminate\Validation\ValidationException;
 
 class SubprogramaResource extends Resource
 {
@@ -53,25 +54,25 @@ class SubprogramaResource extends Resource
                     ->suffixIconColor('success')
                     ->options(function (Get $get) {
                         $id_programa = $get('id_programa');
-                        
+
                         // Carregar o valor do orçamento com base no programa social selecionado
                         $valor_orcamento = Orcamento::where('id', $id_programa)->pluck('valor')->first();
-                        
+
                         // Calcular a quantidade de valor gasto para este programa
                         $valor_gasto = Gasto::where('id_programa', $id_programa)->sum('valor_gasto');
-                        
+
                         // Subtrair a quantidade de valor gasto do valor do orçamento
                         $valor_disponivel = $valor_orcamento - $valor_gasto;
-                        
+
                         // Retornar o valor disponível para o orçamento
                         return [$id_programa => $valor_disponivel];
                     })
                     ->default(function (Get $get) {
                         $id_programa = $get('id_programa');
-                        
+
                         // Carregar o valor do orçamento com base no programa social selecionado
                         $valor_orcamento = Orcamento::where('id', $id_programa)->pluck('valor')->first();
-                        
+
                         // Retornar o valor do orçamento como a opção padrão
                         return $valor_orcamento;
                     })
@@ -92,6 +93,24 @@ class SubprogramaResource extends Resource
     {
         return $this->belongsTo(OrcamentoPrograma::class, 'id_programa', 'id_programa'); // Assuming foreign key is id_programa
     }
+
+
+    // No seu recurso Laravel Nova, você pode adicionar um método estático para calcular a diferença
+    public static function calcularDiferenca($record)
+    {
+        // Access the budget value for the program
+        $orcamentoProgramaValor = optional($record->orcamentoPrograma->orcamento)->valor ?? 0;
+
+        // Access the total amount spent for this program's budget
+        $idPrograma = $record->orcamentoPrograma->id_programa;
+        $valorGastoPrograma = Gasto::where('id_programa', $idPrograma)->sum('valor_gasto');
+
+        // Calculating the difference between the total budget value and the spent amount
+        $diferenca = $orcamentoProgramaValor - $valorGastoPrograma;
+
+        return $diferenca;
+    }
+
 
 
     public static function table(Table $table): Table
@@ -120,22 +139,14 @@ class SubprogramaResource extends Resource
                         // Acessar o valor original do orçamento do programa a partir da relação definida no modelo Subprograma
                         return optional($record->orcamentoPrograma->orcamento)->valor ?? '-';
                     }),
-                
+
                 Tables\Columns\TextColumn::make('orcamento_programa_valor')
                     ->label('Orçamento Restante')
                     ->numeric()
                     ->sortable()
                     ->getStateUsing(function ($record) {
-                        // Acessar o valor do orçamento do programa a partir da relação definida no modelo Subprograma
-                        $orcamentoProgramaValor = optional($record->orcamentoPrograma->orcamento)->valor ?? 0;
-
-                        // Obtendo o valor do subprograma
-                        $valorSubprograma = $record->valor;
-
-                        // Calculando a diferença entre o valor da tabela orcamento e o valor do subprograma
-                        $diferenca = $orcamentoProgramaValor - $valorSubprograma;
-
-                        return $diferenca;
+                        // Usando o método estático para calcular a diferença
+                        return self::calcularDiferenca($record);
                     }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -166,6 +177,23 @@ class SubprogramaResource extends Resource
         return [
             //
         ];
+    }
+
+    protected function beforeCreate(): void
+    {
+        // Obtenha o valor do campo de valor do orçamento
+        $orcamento_id = $this->record->orcamento_id;
+        $valor_orcamento = Orcamento::findOrFail($orcamento_id)->valor;
+
+        // Obtenha o valor informado no campo de valor
+        $valor_informado = $this->record->valor;
+
+        // Verifique se o valor informado é maior do que o valor do orçamento
+        if ($valor_informado > $valor_orcamento) {
+            // Se for, emita um erro e interrompa o processo de criação
+            $this->addError('valor', 'O valor informado não pode ser maior do que o valor do orçamento.');
+            $this->halt();
+        }
     }
 
     public static function getPages(): array

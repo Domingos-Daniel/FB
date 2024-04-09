@@ -4,6 +4,7 @@ namespace App\Filament\Clusters\Programas\Resources\SubprogramaResource\Pages;
 
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource;
 use App\Models\gasto;
+use App\Models\Orcamento;
 use App\Models\OrcamentoPrograma;
 use App\Models\Subprograma;
 use Filament\Actions;
@@ -14,7 +15,12 @@ class CreateSubprograma extends CreateRecord
 {
     protected static string $resource = SubprogramaResource::class;
 
-  
+    protected function mutateDataBeforeCreate(array $data):array{
+        $data['user_id'] = auth()->user()->id;
+     
+        return $data;
+    }
+
     public function getSubNavigation(): array
     {
         if (filled($cluster = static::getCluster())) {
@@ -24,43 +30,43 @@ class CreateSubprograma extends CreateRecord
         return [];
     }
 
-
-
-protected function afterCreate(): void
+    protected function beforeCreate(): void
 {
-    
-    try {
-        $subprograma = Subprograma::findOrFail($this->record['id']);
-        $programa = $subprograma->programa;
+    $id_programa = $this->data['id_programa'] ?? null; // Obtém o id do programa social selecionado do array de dados
 
-        // Obtém o ID do orçamento associado ao programa
-        $orcamentoPrograma = OrcamentoPrograma::where('id_programa', $programa->id)->first();
-        $id_orcamento = $orcamentoPrograma ? $orcamentoPrograma->id_orcamento : null;
+    if ($id_programa === null) {
+        // Se o id_programa não estiver definido, interrompa o processo de criação
+        $this->halt();
+        return;
+    }
 
-        // Cria o registro de Gasto
-        $gasto = new Gasto();
-        $gasto->id_programa = $programa->id;
-        $gasto->id_subprograma = $subprograma->id;
-        $gasto->id_orcamento = $id_orcamento; // Utiliza o ID do orçamento obtido
-        $gasto->valor_gasto = $this->record['valor'];
-        $gasto->save();
+    $valor_submetido = $this->record['valor'] ?? null; // Obtém o valor submetido
 
+    // Carregar o valor do orçamento com base no programa social selecionado
+    $valor_orcamento = Orcamento::where('id', $id_programa)->value('valor');
+
+    // Calcular a quantidade de valor gasto para este programa
+    $valor_gasto = Gasto::where('id_programa', $id_programa)->sum('valor_gasto');
+
+    // Calcular o valor disponível no orçamento
+    $valor_disponivel = $valor_orcamento - $valor_gasto;
+
+    // Verificar se o valor submetido é maior que o valor disponível no orçamento
+    if ($valor_submetido > $valor_disponivel) {
+        // Emitir uma notificação de erro
         Notification::make()
-            ->title('SubPrograma Adicionado com sucesso')
-            ->body('O seu subprograma foi adicionado com sucesso ')
-            ->success()
-            ->sendToDatabase(\auth()->user())
+            ->error()
+            ->title('Erro ao criar registro')
+            ->message('O valor submetido é maior que o valor disponível no orçamento.')
             ->send();
 
-    } catch (\Exception $e) {
-        Notification::make()
-            ->title('Erro ao salvar')
-            ->body('Erro na inserção dos dados. Por favor, tente novamente: ' . $e->getMessage())
-            ->danger()
-            ->sendToDatabase(\auth()->user())
-            ->send();
+        // Interromper o processo de criação
+        $this->halt();
     }
 }
 
+    
+
+    
 
 }
