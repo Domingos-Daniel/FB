@@ -90,6 +90,7 @@ class SubprogramaResource extends Resource
                         // Acessar o valor original do orçamento do programa a partir da relação definida no modelo Subprograma
                         return optional($record->orcamentoPrograma->orcamento)->valor ?? '-';
                     }),
+                
                 Tables\Columns\TextColumn::make('orcamento_programa_valor')
                     ->label('Orçamento Restante')
                     ->numeric()

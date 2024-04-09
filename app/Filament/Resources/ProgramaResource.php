@@ -6,6 +6,9 @@ use App\Filament\Clusters\Programas;
 use App\Filament\Exports\ProgramaExporter;
 use App\Filament\Resources\ProgramaResource\Pages;
 use App\Filament\Resources\ProgramaResource\RelationManagers;
+use App\Models\gasto;
+use App\Models\Orcamento;
+use App\Models\OrcamentoPrograma;
 use App\Models\Programa;
 use App\Models\User;
 use Filament\Forms;
@@ -37,7 +40,10 @@ class ProgramaResource extends Resource
     {
         return static::getModel()::count();
     }
-
+    public function orcamentoPrograma()
+    {
+        return $this->belongsTo(OrcamentoPrograma::class, 'id_programa', 'id_programa'); // Assuming foreign key is id_programa
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -106,11 +112,53 @@ class ProgramaResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('area_foco')
                     ->searchable(),
+               
                 Tables\Columns\TextColumn::make('publico_alvo')
                     ->searchable(),
-                // Tables\Columns\TextColumn::make('orcamento')
-                //     ->numeric()
-                //     ->sortable(),
+                    Tables\Columns\TextColumn::make('orcamento')
+    ->label('Orçamento')
+    ->numeric()
+    ->sortable()
+    ->getStateUsing(function ($record) {
+        // Acessar o valor do orçamento associado ao programa
+        $orcamentoPrograma = OrcamentoPrograma::where('id_programa', $record->id)->first();
+        
+        if ($orcamentoPrograma) {
+            $orcamento = Orcamento::find($orcamentoPrograma->id_orcamento);
+            return $orcamento ? $orcamento->valor : '-';
+        }
+        
+        return '-';
+    }),
+
+    Tables\Columns\TextColumn::make('diferenca_orcamento_gasto')
+    ->label('Valor Restante')
+    ->numeric()
+    ->sortable()
+    ->getStateUsing(function ($record) {
+        // Consulta o orçamento associado ao programa
+        $orcamentoPrograma = OrcamentoPrograma::where('id_programa', $record->id)->first();
+        
+        if ($orcamentoPrograma) {
+            // Consulta o valor do orçamento
+            $orcamento = Orcamento::find($orcamentoPrograma->id_orcamento);
+            
+            if ($orcamento) {
+                $valorOrcamento = $orcamento->valor;
+                
+                // Consulta os gastos associados ao programa e calcula o total de gastos
+                $totalGasto = Gasto::where('id_programa', $record->id)->sum('valor_gasto');
+                
+                // Calcula a diferença entre o valor do orçamento e o total de gastos
+                $diferenca = $valorOrcamento - $totalGasto;
+                return $diferenca;
+            }
+        }
+        
+        return '-';
+    }),
+
+
                 Tables\Columns\TextColumn::make('responsavel')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
