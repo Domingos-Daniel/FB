@@ -38,10 +38,6 @@ class User extends Authenticatable implements FilamentUser
         'remember_token',
     ];
 
-    public function roles()
-    {
-        return $this->belongsTo(Role::class);
-    }
 
     /**
      * The attributes that should be cast.
@@ -52,6 +48,11 @@ class User extends Authenticatable implements FilamentUser
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id');
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

@@ -7,6 +7,7 @@ use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -14,6 +15,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 use function PHPUnit\Framework\callback;
@@ -67,14 +70,15 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $user = Auth::user();
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()->label("Nome Completo"),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('role.name')
-                    ->label('Programa Associado')
+                Tables\Columns\TextColumn::make('roles.name')
+                    ->label('Função')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('email_verified_at')
                     ->dateTime(format: "d/m/Y H:i:s")
@@ -91,13 +95,16 @@ class UserResource extends Resource
             ->filters([
                 //
 
-                SelectFilter::make('Funcao')
-                    ->options(Role::pluck('name', 'id'))
-                    ->query(function ($query) {
-                        $request = app('request');
-                        $value = $request->get('role'); // Access selected role from request
-                        // ... your filtering logic using $value ...
-                    }),
+                Tables\Filters\SelectFilter::make('roles.name')
+  ->relationship('roles', 'name')
+  ->options(function () {
+    return Role::pluck('name', 'id')->toArray();
+  })
+  ->label('Função')
+  ->multiple() // Habilitar multi-seleção
+  ->placeholder('Pesquisar funções...'), // Texto de placeholder na caixa de texto
+
+
             ])
 
             ->actions([

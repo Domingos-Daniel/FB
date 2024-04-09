@@ -24,7 +24,7 @@ class PessoaResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-user-plus';
 
     protected static ?string $recordTitleAttribute = 'nome';
-    
+
     protected static ?string $modelLabel = 'Beneficiario';
     //protected static ?int $navigationSort = 1;
     protected static ?string $pluralModelLabel = 'Gestão dos Beneficiarios';
@@ -36,106 +36,154 @@ class PessoaResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-        ->schema([
-            Forms\Components\TextInput::make('nome')
-                ->required(fn (string $context): bool => $context === 'create')
-                ->maxLength(255),
-            Forms\Components\TextInput::make('email')
-                ->email()
-                ->required(fn (string $context): bool => $context === 'create')
-                ->maxLength(255),
-            Forms\Components\TextInput::make('bi')
-                ->label('BI / Nº de Identificação Fiscal')
-                ->required(fn (string $context): bool => $context === 'create')
-                ->maxLength(14)
-                ->minLength(14),
-            Forms\Components\DatePicker::make('data_nascimento')
-                ->required(fn (string $context): bool => $context === 'create')
-                ->date()
-                ->label('Data de Nascimento / Data de Criação')
-                ->closeOnDateSelection()
-                ->minDate(now()->subYears(80))
-                ->maxDate(now()->subYears(20)),
-            Forms\Components\Radio::make('genero')
-                ->label('Género')
-                ->options([
-                    'Masculino' => 'Masculino',
-                    'Feminino' => 'Feminino',
+            ->schema([
+                Forms\Components\TextInput::make('nome')
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('email')
+                    ->email()
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('bi')
+                    ->label('BI / Nº de Identificação Fiscal')
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->maxLength(14)
+                    ->minLength(14),
+                Forms\Components\DatePicker::make('data_nascimento')
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->date()
+                    ->label('Data de Nascimento / Data de Criação')
+                    ->closeOnDateSelection()
+                    ->minDate(now()->subYears(80))
+                    ->maxDate(now()->subYears(20)),
+                Forms\Components\Radio::make('genero')
+                    ->label('Género')
+                    ->options([
+                        'Masculino' => 'Masculino',
+                        'Feminino' => 'Feminino',
+                        'Outro' => 'Outro',
+                    ])
+                    ->required(fn (string $context): bool => $context === 'create'),
+                Forms\Components\Select::make('grau_academico')->options([
+                    'Ensino Geral' => 'Ensino Geral',
+                    'Ensino Medio' => 'Ensino Medio',
+                    'Bacharel' => 'Bacharel',
+                    'Licenciado' => 'Licenciado',
+                    'Msc' => 'Msc',
+                    'PHD' => 'PHD',
                     'Outro' => 'Outro',
                 ])
-                ->required(fn (string $context): bool => $context === 'create'),
-            Forms\Components\Select::make('grau_academico')->options([
-                    'Ensino Geral' => 'Ensino Geral',
-                    'Ensino Medio' =>'Ensino Medio',
-                    'Bacharel'=>'Bacharel',
-                    'Licenciado'=>'Licenciado',
-                    'Msc'=>'Msc',
-                    'PHD'=>'PHD',
-                    'Outro'=>'Outro',
-                ])
-                ->required(fn (string $context): bool => $context === 'create')
-                ->searchable()
-                ->preload(),
-             Forms\Components\Select::make('tipo_pessoa')->options([
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\Select::make('tipo_pessoa')->options([
                     'Individual' => 'Individual',
-                    'Institucional' =>'Institucional',
-                    'Empresa' =>'Empresa',
+                    'Institucional' => 'Institucional',
+                    'Empresa' => 'Empresa',
                 ])
-                ->required(fn (string $context): bool => $context === 'create')
-                ->searchable()
-                ->preload(),
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->searchable()
+                    ->preload(),
 
-            Forms\Components\Textarea::make('morada')
-                ->label('Morada / Endereço')
-                ->required(fn (string $context): bool => $context === 'create')
-                ->maxLength(65535)
-                ->columnSpanFull(),
-            Forms\Components\TextInput::make('telefone')
-                ->label('Telefone / Celular')
-                ->tel()
-                ->telRegex('/^\d{9}$/')
-                ->required(fn (string $context): bool => $context === 'create')
-                ->numeric()
-                ->maxLength(9)
-                ->minLength(9),
-        ]);
+                Forms\Components\Textarea::make('morada')
+                    ->label('Morada / Endereço')
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->maxLength(65535)
+                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('telefone')
+                    ->label('Telefone / Celular')
+                    ->tel()
+                    ->telRegex('/^\d{9}$/')
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->numeric()
+                    ->maxLength(9)
+                    ->minLength(9),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-        ->columns([
-            Tables\Columns\TextColumn::make('nome')
-                ->searchable()
-                ->label('Beneficiário')
-                ->sortable(),
-            Tables\Columns\TextColumn::make('email')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('bi')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('tipo_pessoa')
-                ->label('Tipo Beneficiário')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('data_nascimento')
-                ->date(format: 'd/m/Y')
-                ->sortable(),
-            Tables\Columns\TextColumn::make('genero')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('grau_academico')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('telefone')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('created_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
-            Tables\Columns\TextColumn::make('updated_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
-        ])
+            ->columns([
+                Tables\Columns\TextColumn::make('nome')
+                    ->searchable()
+                    ->label('Beneficiário')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('bi')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('tipo_pessoa')
+                    ->label('Tipo Beneficiário')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('data_nascimento')
+                    ->date(format: 'd/m/Y')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('genero')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('grau_academico')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('telefone')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
             ->filters([
                 //
+                Tables\Filters\Filter::make('created_at')
+                    ->label('Intervalo de Data de Criação')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label('Intervalo de Data de Criação Inicio'),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label('Intervalo de Data de Criação Fim'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
+
+                Tables\Filters\Filter::make('data_nascimento')
+                    ->label('Data de Nascimento')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label('Data de Nascimento Inicial'),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label('Data de Nascimento Final'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('data_nascimento', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('data_nascimento', '<=', $date),
+                            );
+                    }),
+
+                Tables\Filters\SelectFilter::make('tipo_pessoa')
+                    ->label('Tipo de Beneficiário')
+                    ->multiple()
+                    ->options([
+                        'Individual' => 'Individual',
+                        'Institucional' => 'Institucional',
+                        'Empresa' => 'Empresa',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -146,10 +194,10 @@ class PessoaResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     ExportBulkAction::make()
-                    ->label('Exportar Dado(s)')
-                    ->exporter(PessoaExporter::class)
-                    ->columnMapping(true)
-                    
+                        ->label('Exportar Dado(s)')
+                        ->exporter(PessoaExporter::class)
+                        ->columnMapping(true)
+
                 ]),
             ]);
     }

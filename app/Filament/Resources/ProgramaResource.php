@@ -83,9 +83,9 @@ class ProgramaResource extends Resource
                 //     ->required()
                 //     ->preload()->label('Descrição do Orcamento'), 
 
-                Forms\Components\TextInput::make('responsavel')
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(255), 
+                // Forms\Components\TextInput::make('responsavel')
+                //     ->required(fn (string $context): bool => $context === 'create')
+                //     ->maxLength(255), 
                 Forms\Components\Select::make('responsavel')
                 ->required(fn (string $context): bool => $context === 'create')
                 ->options(

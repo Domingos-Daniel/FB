@@ -62,12 +62,15 @@ class SubprogramaResource extends Resource
     {
         return $this->belongsTo(OrcamentoPrograma::class, 'id_programa', 'id_programa'); // Assuming foreign key is id_programa
     }
+
+
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id_programa')
                     ->numeric()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('designacao')
                     ->searchable(),
@@ -76,8 +79,17 @@ class SubprogramaResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('valor')
+                    ->label('Valor do Subprograma')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('orcamento_programa_valor_original')
+                    ->label('Orçamento Original do Programa')
+                    ->numeric()
+                    ->sortable()
+                    ->getStateUsing(function ($record) {
+                        // Acessar o valor original do orçamento do programa a partir da relação definida no modelo Subprograma
+                        return optional($record->orcamentoPrograma->orcamento)->valor ?? '-';
+                    }),
                 Tables\Columns\TextColumn::make('orcamento_programa_valor')
                     ->label('Orçamento Restante')
                     ->numeric()
@@ -85,13 +97,13 @@ class SubprogramaResource extends Resource
                     ->getStateUsing(function ($record) {
                         // Acessar o valor do orçamento do programa a partir da relação definida no modelo Subprograma
                         $orcamentoProgramaValor = optional($record->orcamentoPrograma->orcamento)->valor ?? 0;
-                
+
                         // Obtendo o valor do subprograma
-                        $valorSubprograma = $record->valor; 
-                
+                        $valorSubprograma = $record->valor;
+
                         // Calculando a diferença entre o valor da tabela orcamento e o valor do subprograma
                         $diferenca = $orcamentoProgramaValor - $valorSubprograma;
-                
+
                         return $diferenca;
                     }),
                 Tables\Columns\TextColumn::make('created_at')
