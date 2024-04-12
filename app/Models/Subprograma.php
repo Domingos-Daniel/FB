@@ -36,6 +36,6 @@ class Subprograma extends Model
 
     public function programa()
     {
-        return $this->belongsTo(Programa::class, 'id_programa');
+        return $this->belongsTo(Programa::class, 'id_programa', 'id');
     }
 }

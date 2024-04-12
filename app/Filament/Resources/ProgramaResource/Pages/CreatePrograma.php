@@ -9,6 +9,7 @@ use Filament\Resources\Pages\CreateRecord;
 class CreatePrograma extends CreateRecord
 {
     protected static string $resource = ProgramaResource::class;
+
     public function getSubNavigation(): array
     {
         if (filled($cluster = static::getCluster())) {
@@ -17,4 +18,4 @@ class CreatePrograma extends CreateRecord
 
         return [];
     }
-} 
+}

@@ -38,7 +38,7 @@ class RoleResource extends Resource
                     ->maxLength(255)->label('Nome'),
                 // Forms\Components\TextInput::make('guard_name')
                 //     ->required()
-                //     ->maxLength(255),
+                //     ->maxLength(255), 
                 Forms\Components\Select::make('permissions')
                     ->relationship('permissions', 'name')
                     ->multiple()

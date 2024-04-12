@@ -5,6 +5,7 @@ namespace App\Filament\Clusters\Programas\Resources;
 use App\Filament\Clusters\Programas;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\Pages;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers;
+use App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers\ProgramaRelationManager;
 use App\Models\gasto;
 use App\Models\Programa;
 use App\Models\Subprograma;
@@ -23,6 +24,9 @@ use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Validation\ValidationException;
 use Closure;
+use Filament\Infolists\Components;
+use Filament\Support\Enums\FontWeight;
+use Filament\Infolists\Infolist;
 
 class SubprogramaResource extends Resource
 {
@@ -32,6 +36,11 @@ class SubprogramaResource extends Resource
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Programas::class;
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 
     public static function form(Form $form): Form
     {
@@ -53,7 +62,6 @@ class SubprogramaResource extends Resource
                     ->label('Valor atual disponível para este programa')
                     ->suffixIcon('heroicon-m-banknotes')
                     ->suffixIconColor('success')
-                    ->hiddenOn('edit')
                     ->options(function (Get $get) {
                         $id_programa = $get('id_programa');
 
@@ -80,10 +88,6 @@ class SubprogramaResource extends Resource
                     })
                     ->disabled()
                     ->selectablePlaceholder(false),
-
-
-
-
                 Forms\Components\TextInput::make('designacao')
                     ->label("Designação")
                     ->required()
@@ -95,7 +99,7 @@ class SubprogramaResource extends Resource
                         fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
                             // Obtém o valor inserido no campo 'valor'
                             $valorInserido = (float) $value;
-                            
+
                             // Obtém o ID do programa selecionado
                             $idPrograma = $get('id_programa');
 
@@ -103,10 +107,10 @@ class SubprogramaResource extends Resource
                             $orcamentoProgramaValor = optional(Orcamento::find($idPrograma))->valor ?? 0;
                             $valorGastoPrograma = Gasto::where('id_programa', $idPrograma)->sum('valor_gasto');
                             $orcamentoDisponivel = $orcamentoProgramaValor - $valorGastoPrograma;
-                            
+
                             // Depura o valor de $orcamentoDisponivel
                             //dd($orcamentoDisponivel,' - teste');
-                
+
                             // Verifica se o valor inserido é maior que o orçamento disponível
                             if ($valorInserido > $orcamentoDisponivel) {
                                 Notification::make()
@@ -176,6 +180,13 @@ class SubprogramaResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->icon('heroicon-m-banknotes')
+                    ->color(function ($record) {
+                        // Usando o método estático para calcular a diferença
+                        $diferenca = self::calcularDiferenca($record);
+
+                        // Retorna a cor com base na condição ternária
+                        return $diferenca < 1000000 ? 'danger' : 'success';
+                    })
                     ->getStateUsing(function ($record) {
                         // Acessar o valor original do orçamento do programa a partir da relação definida no modelo Subprograma
                         return optional($record->orcamentoPrograma->orcamento)->valor ?? '-';
@@ -221,11 +232,79 @@ class SubprogramaResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Components\Split::make([
+                    Components\Section::make([
+                        Components\TextEntry::make('designacao')
+                            ->badge()
+                            ->label('Designação')
+                            ->color('success'),
+                        Components\TextEntry::make('programa.nome')
+                            ->label('Programa Social')
+                            ->badge()
+                            ->weight(FontWeight::Bold)
+                            ->color('info')
+                            ->copyable()
+                            ->copyMessage('Copiado!')
+                            ->copyMessageDuration(1500),
+                        Components\TextEntry::make('orcamento_programa_valor')
+                            ->badge()
+                            ->money('AOA', divideBy: 100)
+                            ->label('Orçamento Restante do Programa')
+                            ->icon('heroicon-m-banknotes')
+                            ->color(function ($record) {
+                                // Usando o método estático para calcular a diferença
+                                $diferenca = self::calcularDiferenca($record);
+
+                                // Retorna a cor com base na condição ternária
+                                return $diferenca < 1000000 ? 'danger' : 'success';
+                            })
+                            ->getStateUsing(function ($record) {
+                                // Acessar o valor original do orçamento do programa a partir da relação definida no modelo Subprograma
+                                return optional($record->orcamentoPrograma->orcamento)->valor ?? '-';
+                            }),
+
+                        Components\TextEntry::make('valor')
+                            ->label('Valor do SubPrograma')
+                            ->badge()
+                            ->numeric()
+                            ->money('AOA', divideBy: 100)
+                            ->color(function ($record) {
+                                // Usando o método estático para calcular a diferença
+                                $diferenca = self::calcularDiferenca($record);
+
+                                // Retorna a cor com base na condição ternária
+                                return $diferenca < 1000000 ? 'danger' : 'success';
+                            }),
+                    ])->grow(true),
+                ])->from('md'),
+
+                Components\Split::make([
+
+                    Components\Section::make([
+
+                        Components\TextEntry::make('created_at')
+                            ->dateTime(format: "d/m/Y H:i:s")
+                            ->label('Criado em'),
+                        Components\TextEntry::make('updated_at')
+                            ->dateTime(format: "d/m/Y H:i:s")
+                            ->label('Atualizado em'),
+                    ])->grow(true),
+                ]),
+
+
+            ]);
+    }
+
 
     public static function getRelations(): array
     {
         return [
             //
+            ProgramaRelationManager::class,
         ];
     }
 

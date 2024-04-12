@@ -32,7 +32,7 @@ class Pessoa extends Model
    
 
     public function programa()
-    { 
+    {  
         return $this->belongsTo(Programa::class);
     }
 

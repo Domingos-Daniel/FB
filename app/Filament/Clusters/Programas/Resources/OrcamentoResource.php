@@ -27,6 +27,11 @@ class OrcamentoResource extends Resource
     protected static ?string $navigationGroup = 'Gestão Orcamental';
     protected static ?string $cluster = Programas::class;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
     public static function form(Form $form): Form
     {
         $programas = Programa::pluck('nome', 'id')->toArray();

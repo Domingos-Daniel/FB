@@ -22,6 +22,11 @@ class Programa extends Model
         'responsavel', 
     ];
 
+    protected $casts = [
+        'area_foco' => 'array',
+        'publico_alvo' => 'array',
+    ];
+
     public function getValidoAttribute()
     {
         return $this->data_fim >= Carbon::now();
@@ -33,17 +38,22 @@ class Programa extends Model
 
     public function orcamento()
     {
-        return $this->hasOne(Orcamento::class, 'id_orcamento');
+        return $this->hasOne(Orcamento::class, 'id');
     }
 
-    public function subprogramas()
+    public function subprograma()
     {
-        return $this->hasMany(Subprograma::class);
+        return $this->hasMany(Subprograma::class, 'id', 'id_programa');
     }
 
     public function pessoa() 
     {
         return $this->belongsTo(Pessoa::class, 'pessoa_id');
+    }
+
+    public function programa()
+    {
+        return $this->belongsTo(Programa::class, 'id');
     }
 
 

@@ -16,6 +16,9 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists\Components;
+use Filament\Support\Enums\FontWeight;
+use Filament\Infolists\Infolist;
 
 class PessoaResource extends Resource
 {
@@ -83,7 +86,7 @@ class PessoaResource extends Resource
                 ])
                     ->required(fn (string $context): bool => $context === 'create')
                     ->searchable()
-                    ->preload(),
+                    ->preload(), 
 
                 Forms\Components\Textarea::make('morada')
                     ->label('Morada / Endereço')
@@ -201,6 +204,51 @@ class PessoaResource extends Resource
                 ]),
             ]);
     }
+
+    public static function infolist(Infolist $infolist): Infolist
+{
+    return $infolist
+        ->schema([
+            Components\Split::make([
+                Components\Section::make([
+                    Components\TextEntry::make('nome')
+                        ->badge()
+                        ->label('Nome')
+                        ->weight(FontWeight::Bold)
+                        ->color('info'),
+                    Components\TextEntry::make('email')
+                        ->badge()
+                        ->label('Email')
+                        ->color('info'),
+                    Components\TextEntry::make('bi')
+                        ->badge()
+                        ->label('BI')
+                        ->color('info'),
+                    Components\TextEntry::make('tipo_pessoa')
+                        ->badge()
+                        ->label('Tipo de Pessoa')
+                        ->color('info'),
+                    Components\TextEntry::make('data_nascimento')
+                        ->badge()
+                        ->label('Data de Nascimento')
+                        ->color('info'),
+                    Components\TextEntry::make('genero')
+                        ->badge()
+                        ->label('Gênero')
+                        ->color('info'),
+                    Components\TextEntry::make('grau_academico')
+                        ->badge()
+                        ->label('Grau Acadêmico')
+                        ->color('info'),
+                    Components\TextEntry::make('telefone')
+                        ->badge()
+                        ->label('Telefone')
+                        ->color('info'),
+                ])->grow(true),
+            ])->from('md'),
+        ]);
+}
+
 
     public static function getRelations(): array
     {
