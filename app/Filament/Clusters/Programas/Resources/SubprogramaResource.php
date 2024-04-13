@@ -4,8 +4,6 @@ namespace App\Filament\Clusters\Programas\Resources;
 
 use App\Filament\Clusters\Programas;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\Pages;
-use App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers;
-use App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers\ProgramaRelationManager;
 use App\Models\gasto;
 use App\Models\Programa;
 use App\Models\Subprograma;
@@ -172,12 +170,15 @@ class SubprogramaResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('valor')
                     ->label('Valor do Subprograma')
+                    ->color('info')
+                    ->money('AOA', divideBy: 100)
                     ->numeric()
                     ->icon('heroicon-m-banknotes')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('orcamento_programa_valor_original')
                     ->label('Orçamento Original do Programa')
                     ->numeric()
+                    ->money('AOA', divideBy: 100)
                     ->sortable()
                     ->icon('heroicon-m-banknotes')
                     ->color(function ($record) {
@@ -195,6 +196,7 @@ class SubprogramaResource extends Resource
                 Tables\Columns\TextColumn::make('orcamento_programa_valor')
                     ->label('Orçamento Restante')
                     ->numeric()
+                    ->money('AOA', divideBy: 100)
                     ->sortable()
                     ->icon('heroicon-m-banknotes')
                     ->color(function ($record) {
@@ -304,7 +306,6 @@ class SubprogramaResource extends Resource
     {
         return [
             //
-            ProgramaRelationManager::class,
         ];
     }
 

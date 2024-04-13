@@ -13,7 +13,10 @@ class ViewSubprograma extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make(),
+            Actions\CreateAction::make()->label('Novo Subprograma'),
+            Actions\EditAction::make()->label('Editar Subprograma'),
+            Actions\DeleteAction::make()->label('Remover Subprograma'),
+
         ];
     }
 }

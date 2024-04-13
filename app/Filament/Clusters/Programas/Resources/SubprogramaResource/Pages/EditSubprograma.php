@@ -37,32 +37,37 @@ class EditSubprograma extends EditRecord
         try {
             $subprograma = Subprograma::findOrFail($this->record['id']);
             $programa = $subprograma->programa;
-
+    
             // Obtém o ID do orçamento associado ao programa
             $orcamentoPrograma = OrcamentoPrograma::where('id_programa', $programa->id)->first();
             $id_orcamento = $orcamentoPrograma ? $orcamentoPrograma->id_orcamento : null;
-
-            // Cria o registro de Gasto
-            $gasto = new gasto();
-            $gasto->id_programa = $programa->id;
-            $gasto->id_subprograma = $subprograma->id;
-            $gasto->id_orcamento = $id_orcamento; // Utiliza o ID do orçamento obtido
-            $gasto->valor_gasto = $this->record['valor'];
-            $gasto->save();
-
+    
+            // Atualiza o registro de Gasto, se existir
+            $gasto = Gasto::where('id_programa', $programa->id)
+                ->where('id_subprograma', $subprograma->id)
+                ->where('id_orcamento', $id_orcamento)
+                ->first();
+    
+            if ($gasto) {
+                $gasto->valor_gasto = $this->record['valor'];
+                $gasto->save();
+            }
+    
             Notification::make()
-                ->title('SubPrograma Alterado com sucesso')
-                ->body('O seu subprograma foi editado com sucesso ')
+                ->title('SubPrograma Atualizado com sucesso')
+                ->body('O seu subprograma foi atualizado com sucesso ')
                 ->success()
                 ->sendToDatabase(\auth()->user())
                 ->send();
+    
         } catch (\Exception $e) {
             Notification::make()
-                ->title('Erro ao salvar')
-                ->body('Erro na inserção dos dados. Por favor, tente novamente: ' . $e->getMessage())
+                ->title('Erro ao atualizar')
+                ->body('Erro na atualização dos dados. Por favor, tente novamente: ' . $e->getMessage())
                 ->danger()
                 ->sendToDatabase(\auth()->user())
                 ->send();
         }
+        
     }
 }

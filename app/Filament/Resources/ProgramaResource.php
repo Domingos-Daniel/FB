@@ -3,11 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Clusters\Programas;
-use App\Filament\Clusters\Programas\Resources\ProgramaResource\RelationManagers\SubprogramaRelationManager;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers\ProgramaRelationManager;
 use App\Filament\Exports\ProgramaExporter;
 use App\Filament\Resources\ProgramaResource\Pages;
-use App\Filament\Resources\ProgramaResource\RelationManagers;
+use App\Filament\Resources\ProgramaResource\RelationManagers\SubprogramaRelationManager;
 use App\Models\gasto;
 use App\Models\Orcamento;
 use App\Models\OrcamentoPrograma;
@@ -239,6 +238,7 @@ class ProgramaResource extends Resource
                     Components\Section::make([
                         Components\TextEntry::make('orcamento.valor')
                             ->numeric()
+                            ->money('AOA', divideBy: 100)
                             ->color(function ($record) {
                                 // Verifica se o valor do orçamento está disponível no registro
                                 if (isset($record['orcamento']['valor'])) {
@@ -258,6 +258,7 @@ class ProgramaResource extends Resource
 
                         Components\TextEntry::make('diferenca_orcamento_gasto')
                             ->numeric()
+                            ->money('AOA', divideBy: 100)
                             ->color(function ($record) {
                                 // Verifica se o valor do orçamento está disponível no registro
                                 if (isset($record['orcamento']['valor'])) {
@@ -354,7 +355,7 @@ class ProgramaResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ProgramaRelationManager::class,
+            SubprogramaRelationManager::class,
         ];
     }
 

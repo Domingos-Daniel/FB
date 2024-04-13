@@ -43,10 +43,10 @@ class Programa extends Model
 
     public function subprograma()
     {
-        return $this->hasMany(Subprograma::class, 'id', 'id_programa');
+        return $this->hasMany(Subprograma::class,  'id_programa', 'id');
     }
 
-    public function pessoa() 
+    public function pessoa()  
     {
         return $this->belongsTo(Pessoa::class, 'pessoa_id');
     }

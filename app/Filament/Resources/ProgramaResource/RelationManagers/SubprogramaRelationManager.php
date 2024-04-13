@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers;
+namespace App\Filament\Resources\ProgramaResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -10,18 +10,18 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class ProgramaRelationManager extends RelationManager
+class SubprogramaRelationManager extends RelationManager
 {
-    protected static string $relationship = 'programa';
+    protected static ?string $title = 'Subprogramas Associados';
+    protected static string $relationship = 'subprograma';
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('designacao')
+                Forms\Components\TextInput::make('nome')
                     ->required()
                     ->maxLength(255),
-                    
             ]);
     }
 
@@ -30,17 +30,19 @@ class ProgramaRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('designacao')
             ->columns([
-                Tables\Columns\TextColumn::make('orcamento.valor')
-                    ->numeric(),
-                Tables\Columns\TextColumn::make('programa.nome') 
-                    ->label('Programa Associado')
+                Tables\Columns\TextColumn::make('id')->sortable()
+                    ->label('ID do SubPrograma')
                     ->searchable()
-                    ->sortable(), 
-                    Tables\Columns\TextColumn::make('subprograma.valor')
-                    ->label('Valor do Subprograma')
-                    ->numeric()
-                    ->icon('heroicon-m-banknotes')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('designacao')
+                    ->sortable()
+                    ->label('Designação do Subprograma'),
+                Tables\Columns\TextColumn::make('valor')
+                    ->sortable()
+                    ->badge()
+                    ->money('AOA', divideBy: 100)
+                    ->label('Orçamento do Subprograma'),
+                
             ])
             ->filters([
                 //

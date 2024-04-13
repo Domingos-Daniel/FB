@@ -7,6 +7,7 @@ use App\Filament\Resources\PessoaResource\Pages;
 use App\Filament\Resources\PessoaResource\RelationManagers;
 use App\Models\Pessoa;
 use Filament\Forms;
+use Filament\Forms\Components\Component;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -206,49 +207,68 @@ class PessoaResource extends Resource
     }
 
     public static function infolist(Infolist $infolist): Infolist
-{
-    return $infolist
-        ->schema([
-            Components\Split::make([
-                Components\Section::make([
-                    Components\TextEntry::make('nome')
-                        ->badge()
-                        ->label('Nome')
-                        ->weight(FontWeight::Bold)
-                        ->color('info'),
-                    Components\TextEntry::make('email')
-                        ->badge()
-                        ->label('Email')
-                        ->color('info'),
-                    Components\TextEntry::make('bi')
-                        ->badge()
-                        ->label('BI')
-                        ->color('info'),
-                    Components\TextEntry::make('tipo_pessoa')
-                        ->badge()
-                        ->label('Tipo de Pessoa')
-                        ->color('info'),
-                    Components\TextEntry::make('data_nascimento')
-                        ->badge()
-                        ->label('Data de Nascimento')
-                        ->color('info'),
-                    Components\TextEntry::make('genero')
-                        ->badge()
-                        ->label('Gênero')
-                        ->color('info'),
-                    Components\TextEntry::make('grau_academico')
-                        ->badge()
-                        ->label('Grau Acadêmico')
-                        ->color('info'),
-                    Components\TextEntry::make('telefone')
-                        ->badge()
-                        ->label('Telefone')
-                        ->color('info'),
-                ])->grow(true),
-            ])->from('md'),
-        ]);
-}
+    {
+        return $infolist
+            ->schema([
 
+                Components\Split::make([
+                // Seção de Informações Pessoais
+                Components\Section::make('Informações Pessoais')
+                    ->schema([
+                        Components\TextEntry::make('nome')
+                            ->badge()
+                            ->label('Nome')
+                            ->weight(FontWeight::Bold)
+                            ->color('info'),
+                        Components\TextEntry::make('email')
+                            ->badge()
+                            ->label('Email')
+                            ->color('info'),
+                        Components\TextEntry::make('bi')
+                            ->badge()
+                            ->label('BI / Nº de Identificação Fiscal')
+                            ->color('info'),
+                        Components\TextEntry::make('data_nascimento')
+                            ->badge()
+                            ->label('Data de Nascimento')
+                            ->color('info'),
+                        Components\TextEntry::make('genero')
+                            ->badge()
+                            ->label('Gênero')
+                            ->color('info'),
+                        Components\TextEntry::make('grau_academico')
+                            ->badge()
+                            ->label('Grau Acadêmico')
+                            ->color('info'),
+                        Components\TextEntry::make('telefone')
+                            ->badge()
+                            ->label('Telefone / Celular')
+                            ->color('info'),
+                    ])->grow(true),
+                ]),
+    
+                // Seção de Endereço
+                Components\Split::make([
+                  Components\Section::make('Seção de Endereço') ->schema([
+
+                        Components\TextEntry::make('morada')
+                            ->badge()
+                            ->label('Morada / Endereço')
+                            ->color('info'),
+                    
+                        Components\TextEntry::make('created_at')
+                            ->badge()
+                            ->label('Criado em')
+                            ->color('info'),
+                        Components\TextEntry::make('updated_at')
+                            ->badge()
+                            ->label('Atualizado em')
+                            ->color('info'),
+                    ]),
+                    ])
+            ]);
+    }
+    
 
     public static function getRelations(): array
     {
