@@ -15,6 +15,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\Action;
+use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 
 class OrcamentoResource extends Resource
 {
@@ -29,7 +31,7 @@ class OrcamentoResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        return static::getModel()::count(); 
     }
 
     public static function form(Form $form): Form
@@ -65,6 +67,10 @@ class OrcamentoResource extends Resource
                     ->label('Descrição')
                     ->searchable()
                     ->sortable(),
+                   // ApprovalStatusColumn::make("approvalStatus.status")
+                // ->getStateUsing(function ($record) {
+                //     return optional($record->approvalStatus)->status;
+                // }),
                 Tables\Columns\TextColumn::make('valor')
                     ->numeric()
                     ->sortable(),
@@ -84,6 +90,16 @@ class OrcamentoResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+
+                ...\EightyNine\Approvals\Tables\Actions\ApprovalActions::make(
+                    // define your action here that will appear once approval is completed
+                    Action::make("Done"),
+                    [
+                        Tables\Actions\EditAction::make(),
+                        Tables\Actions\ViewAction::make()
+                    ]
+                ),
+               
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -108,4 +124,6 @@ class OrcamentoResource extends Resource
             'edit' => Pages\EditOrcamento::route('/{record}/edit'),
         ];
     }
+
+   
 }
