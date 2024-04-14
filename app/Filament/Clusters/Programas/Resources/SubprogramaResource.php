@@ -88,11 +88,12 @@ class SubprogramaResource extends Resource
                     ->selectablePlaceholder(false),
                 Forms\Components\TextInput::make('designacao')
                     ->label("Designação")
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('valor')
-                    ->required()
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->numeric()
+                    ->money('AOA', divideBy: 100)
                     ->rules([
                         fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
                             // Obtém o valor inserido no campo 'valor'

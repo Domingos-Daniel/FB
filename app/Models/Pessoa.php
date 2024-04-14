@@ -29,13 +29,26 @@ class Pessoa extends Model
         return $this->belongsToMany(ProgramaPessoa::class, 'programa_pessoa');
     }
 
-   
+    public function subprograma()
+    {
+        return $this->hasMany(Subprograma::class, 'id', 'id_subprograma');
+    }
 
     public function programa()
     {  
-        return $this->belongsTo(Programa::class);
+        return $this->hasMany(Programa::class, 'id');
     }
 
+    public function subprogramapessoa()
+    {
+        return $this->hasMany(SubprogramaPessoa::class,  'id_pessoa', 'id');
+    }
+
+    public function pessoa()
+    {
+        return $this->HasMany (Pessoa::class, 'id');
+    }
+ 
 
     public function getActivitylogOptions(): LogOptions
     {

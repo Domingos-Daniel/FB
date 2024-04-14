@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Exports\PessoaExporter;
 use App\Filament\Resources\PessoaResource\Pages;
 use App\Filament\Resources\PessoaResource\RelationManagers;
+use App\Filament\Resources\PessoaResource\RelationManagers\SubprogramaPessoaRelationManager;
+use App\Filament\Resources\SubprogramaPessoaResource\RelationManagers\PessoaRelationManager;
 use App\Models\Pessoa;
 use Filament\Forms;
 use Filament\Forms\Components\Component;
@@ -119,6 +121,8 @@ class PessoaResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tipo_pessoa')
                     ->label('Tipo Beneficiário')
+                    ->badge()
+                    ->color('info')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('data_nascimento')
                     ->date(format: 'd/m/Y')
@@ -126,7 +130,9 @@ class PessoaResource extends Resource
                 Tables\Columns\TextColumn::make('genero')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('grau_academico')
-                    ->searchable(),
+                    ->searchable()
+                    ->badge()
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('telefone')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -273,7 +279,7 @@ class PessoaResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            SubprogramaPessoaRelationManager::class,
         ];
     }
 
@@ -295,5 +301,10 @@ class PessoaResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return ['nome', 'email', 'morada', 'telefone'];
+    }
+
+    public static function getGlobalSearchResultUrl(Model $record): string
+    {
+        return PessoaResource::getUrl('view', ['record' => $record]);
     }
 }

@@ -47,7 +47,7 @@ class UserResource extends Resource
                     ->email()
                     ->required(fn (string $context): bool => $context === 'create')
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                    ->maxLength(255), 
                 //Forms\Components\DateTimePicker::make('email_verified_at'),
                 Forms\Components\TextInput::make('password')
                     ->password()

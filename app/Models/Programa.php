@@ -48,7 +48,7 @@ class Programa extends Model
 
     public function pessoa()  
     {
-        return $this->belongsTo(Pessoa::class, 'pessoa_id');
+        return $this->belongsTo(Pessoa::class, 'id_pessoa', 'id');
     }
 
     public function programa()

@@ -378,4 +378,9 @@ class ProgramaResource extends Resource
     {
         return ['nome', 'responsavel'];
     }
+
+    public static function getGlobalSearchResultUrl(Model $record): string
+    {
+        return ProgramaResource::getUrl('view', ['record' => $record]);
+    }
 }

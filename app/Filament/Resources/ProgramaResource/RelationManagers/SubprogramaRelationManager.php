@@ -14,6 +14,7 @@ class SubprogramaRelationManager extends RelationManager
 {
     protected static ?string $title = 'Subprogramas Associados';
     protected static string $relationship = 'subprograma';
+    protected static bool $isLazy = false;
 
     public function form(Form $form): Form
     {
@@ -27,11 +28,11 @@ class SubprogramaRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        return $table
+        return $table 
             ->recordTitleAttribute('designacao')
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable()
-                    ->label('ID do SubPrograma')
+                    ->label('ID do SubPrograma') 
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('designacao')
