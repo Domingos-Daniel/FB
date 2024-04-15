@@ -5,6 +5,7 @@ namespace App\Filament\Clusters\Workflow\Resources;
 use App\Filament\Clusters\Workflow;
 use App\Filament\Clusters\Workflow\Resources\WorkflowTransitionResource\Pages;
 use App\Filament\Clusters\Workflow\Resources\WorkflowTransitionResource\RelationManagers;
+use App\Models\Role;
 use App\Models\WorkflowStage;
 use App\Models\WorkflowTransition;
 use Filament\Forms;
@@ -28,6 +29,7 @@ class WorkflowTransitionResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $roles = Role::pluck('name', 'name')->toArray();
         return $form
             ->schema([
                 Forms\Components\Select::make('etapa_origem_id')
@@ -42,9 +44,7 @@ class WorkflowTransitionResource extends Resource
                     ->relationship('workflowStage', 'nome'),
 
                 Forms\Components\Select::make('permissao_requerida')
-                    ->relationship('roles', 'name', function (Builder $query) {
-                        return auth()->user()->hasRole('Admin') ? $query : $query->where('name', '!=', 'Admin');
-                    })
+                    ->options($roles)
                     ->multiple()
                     ->searchable()
                     ->required(fn (string $context): bool => $context === 'create')

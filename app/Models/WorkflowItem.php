@@ -74,6 +74,6 @@ class WorkflowItem extends Model
         }
 
         // Verifique se o usuário atual tem a permissão necessária para avançar
-        return Auth::user()->hasPermissionTo($transicao->permissao_requerida);
+        //return Auth::user()->hasPermissionTo($transicao->permissao_requerida);
     }
 }

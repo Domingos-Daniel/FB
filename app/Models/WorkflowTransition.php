@@ -9,7 +9,15 @@ class WorkflowTransition extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['etapa_origem_id', 'etapa_destino_id', 'permissao_requerida'];
+    protected $fillable = [
+        'etapa_origem_id',
+        'etapa_destino_id',
+        'permissao_requerida'
+    ];
+
+    protected $casts = [
+        'permissao_requerida' => 'array',
+    ];
 
     public function etapaOrigem()
     {
@@ -18,8 +26,8 @@ class WorkflowTransition extends Model
 
     public function workflowStage()
     {
-        return $this->belongsTo(WorkflowStage::class);
-    }
+        return $this->belongsTo(WorkflowStage::class, 'id');
+    } 
 
     public function workflowItem(){
         return $this->hasMany(WorkflowItem::class);
