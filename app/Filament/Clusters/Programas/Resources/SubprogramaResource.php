@@ -301,7 +301,7 @@ class SubprogramaResource extends Resource
 
             ]);
     }
-
+ 
 
     public static function getRelations(): array
     {

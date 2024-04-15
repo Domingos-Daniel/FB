@@ -7,6 +7,7 @@ use App\Filament\Clusters\Programas\Resources\OrcamentoResource\Pages;
 use App\Filament\Clusters\Programas\Resources\OrcamentoResource\RelationManagers;
 use App\Models\Orcamento;
 use App\Models\Programa;
+use App\Models\WorkflowItem;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
@@ -16,7 +17,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\Action;
-use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 
 class OrcamentoResource extends Resource
 {
@@ -32,6 +32,21 @@ class OrcamentoResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count(); 
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->whereHas('workflowItem', function (Builder $query) {
+            $query->where('etapa_atual_id', 2);
+        });
+    }
+
+    public function obterRegistrosAprovados()
+    {
+        // Consulta para recuperar registros aprovados no workflow
+        $registrosAprovados = Orcamento::where('etapa_atual_id', 3)->get();
+    
+        // Faça algo com os registros aprovados...
     }
 
     public static function form(Form $form): Form
@@ -61,16 +76,15 @@ class OrcamentoResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $registrosAprovados = WorkflowItem::where('etapa_atual_id', 3)->get();
         return $table
+        
             ->columns([
                 Tables\Columns\TextColumn::make('descricao')
                     ->label('Descrição')
                     ->searchable()
                     ->sortable(),
-                   // ApprovalStatusColumn::make("approvalStatus.status")
-                // ->getStateUsing(function ($record) {
-                //     return optional($record->approvalStatus)->status;
-                // }),
+                    
                 Tables\Columns\TextColumn::make('valor')
                     ->numeric()
                     ->sortable(),
@@ -91,14 +105,7 @@ class OrcamentoResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
 
-                ...\EightyNine\Approvals\Tables\Actions\ApprovalActions::make(
-                    // define your action here that will appear once approval is completed
-                    Action::make("Done"),
-                    [
-                        Tables\Actions\EditAction::make(),
-                        Tables\Actions\ViewAction::make()
-                    ]
-                ),
+               
                
             ])
             ->bulkActions([

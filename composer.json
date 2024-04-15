@@ -15,6 +15,7 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
+        "ringlesoft/laravel-process-approval": "^1.0",
         "rmsramos/activitylog": "^0.1.3",
         "spatie/laravel-permission": "^6.3"
     },
