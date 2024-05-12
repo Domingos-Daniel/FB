@@ -34,27 +34,27 @@ class OrcamentoResource extends Resource
         return static::getModel()::count(); 
     }
 
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()->whereHas('workflowItem', function (Builder $query) {
-            $query->where('etapa_atual_id', 2);
-        });
-    }
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     return parent::getEloquentQuery()->whereHas('workflowItem', function (Builder $query) {
+    //         $query->where('etapa_atual_id', 2);
+    //     });
+    // }
 
-    public function obterRegistrosAprovados()
-    {
-        // Consulta para recuperar registros aprovados no workflow
-        $registrosAprovados = Orcamento::where('etapa_atual_id', 3)->get();
+    // public function obterRegistrosAprovados()
+    // {
+    //     // Consulta para recuperar registros aprovados no workflow
+    //     $registrosAprovados = Orcamento::where('etapa_atual_id', 3)->get();
     
-        // Faça algo com os registros aprovados...
-    }
+    //     // Faça algo com os registros aprovados...
+    // }
 
     public static function form(Form $form): Form
     {
         $programas = Programa::pluck('nome', 'id')->toArray();
 
         return $form
-            ->schema([
+            ->schema([ 
                  // Forms\Components\TextInput::make('id_programa')
                 //     ->required()
                 //     ->numeric(),
@@ -67,16 +67,18 @@ class OrcamentoResource extends Resource
                     ->label("Valor do Orçamento")
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('descricao')
+                Forms\Components\RichEditor::make('descricao')
                     ->required()
                     ->maxLength(255)
                     ->label('Descrição do Orçamento'),
+                Forms\Components\Hidden::make('id_criador')
+                    ->default(auth()->id()),
             ]);
     }
 
     public static function table(Table $table): Table
     {
-        $registrosAprovados = WorkflowItem::where('etapa_atual_id', 3)->get();
+        //$registrosAprovados = WorkflowItem::where('etapa_atual_id', 3)->get();
         return $table
         
             ->columns([

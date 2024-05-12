@@ -4,7 +4,6 @@ namespace App\Filament\Clusters\Programas\Resources\OrcamentoResource\Pages;
 
 use App\Filament\Clusters\Programas\Resources\OrcamentoResource;
 use App\Models\Orcamento;
-use App\Models\WorkflowItem;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Actions\Action;
@@ -40,25 +39,25 @@ class EditOrcamento extends EditRecord
             return;
         }
 
-        // Verificar se já existe um registro com as mesmas condições
-        $existingRecord = WorkflowItem::where('modelo_type', $modeloType)
-            ->where('modelo_id', $orcamentoId)
-            ->where('etapa_atual_id', $etapaInicialId)
-            ->exists();
+        // // Verificar se já existe um registro com as mesmas condições
+        // $existingRecord = WorkflowItem::where('modelo_type', $modeloType)
+        //     ->where('modelo_id', $orcamentoId)
+        //     ->where('etapa_atual_id', $etapaInicialId)
+        //     ->exists();
 
-        // Se já existir um registro com as mesmas condições, interrompa o processo de criação
-        if ($existingRecord) {
-            // Emitir uma notificação de erro
-            Notification::make()
-                ->danger()
-                ->duration(5000)
-                ->title('Erro ao criar registro')
-                ->body('Já existe um registro com os mesmos registos de programa, subprograma e beneficiario.')
-                ->send();
+        // // Se já existir um registro com as mesmas condições, interrompa o processo de criação
+        // if ($existingRecord) {
+        //     // Emitir uma notificação de erro
+        //     Notification::make()
+        //         ->danger()
+        //         ->duration(5000)
+        //         ->title('Erro ao criar registro')
+        //         ->body('Já existe um registro com os mesmos registos de programa, subprograma e beneficiario.')
+        //         ->send();
 
-            // Interromper o processo de criação
-            $this->halt();
-        } 
+        //     // Interromper o processo de criação
+        //     $this->halt();
+        // } 
     }
     protected function afterSave(): void
     {
@@ -73,12 +72,12 @@ class EditOrcamento extends EditRecord
             // Obtém o ID da etapa inicial do workflow (suponhamos que seja 1)
             $etapaInicialId = 1;
 
-            // Cria um novo item de workflow associado ao orçamento
-            WorkflowItem::create([
-                'modelo_type' => $modeloType,
-                'modelo_id' => $orcamentoId,
-                'etapa_atual_id' => $etapaInicialId,
-            ]);
+            // // Cria um novo item de workflow associado ao orçamento
+            // WorkflowItem::create([
+            //     'modelo_type' => $modeloType,
+            //     'modelo_id' => $orcamentoId,
+            //     'etapa_atual_id' => $etapaInicialId,
+            // ]);
 
             Notification::make()
                 ->title('Orcamento Adicionado com sucesso')

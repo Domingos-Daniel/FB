@@ -14,7 +14,7 @@ class UserPolicy
     {
         return $user->hasPermissionTo('user_read');
     }
-
+ 
     /**
      * Determine whether the user can view the model.
      */
