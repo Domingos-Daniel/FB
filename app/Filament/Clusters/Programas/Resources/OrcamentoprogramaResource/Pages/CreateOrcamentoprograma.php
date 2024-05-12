@@ -41,6 +41,16 @@ class CreateOrcamentoprograma extends CreateRecord
 
             // Interromper o processo de criação
             $this->halt();
-        } 
+        } else{
+            // Emitir uma notificação de erro
+            Notification::make()
+                ->success()
+                ->duration(5000)
+                ->title('Erro ao atribuir Orcamento')
+                ->body('O programa selecionado, ja possui um orcamento')
+                ->sendToDatabase(\auth()->user())
+                ->send();
+
+        }
     }
 }

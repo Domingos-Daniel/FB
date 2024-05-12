@@ -41,7 +41,7 @@ class SubprogramaRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('valor')
                     ->sortable()
                     ->badge()
-                    ->money('AOA', divideBy: 100)
+                    ->money('AOA', true)
                     ->label('Orçamento do Subprograma'),
                 
             ])

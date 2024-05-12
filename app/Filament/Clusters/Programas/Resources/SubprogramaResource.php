@@ -56,43 +56,43 @@ class SubprogramaResource extends Resource
                     ->label("Selecione o Programa Social")
                     ->preload()
                     ->required(fn (string $context): bool => $context === 'create'),
-                    Forms\Components\Select::make('orcamento_id')
-    ->label('Valor atual disponível para este programa')
-    ->suffixIcon('heroicon-m-banknotes')
-    ->suffixIconColor('success')
-    ->hiddenOn('edit')
-    ->options(function (Get $get) {
-        $id_programa = $get('id_programa');
+                Forms\Components\Select::make('orcamento_id')
+                    ->label('Valor atual disponível para este programa')
+                    ->suffixIcon('heroicon-m-banknotes')
+                    ->suffixIconColor('success')
+                    ->hiddenOn('edit')
+                    ->options(function (Get $get) {
+                        $id_programa = $get('id_programa');
 
-        // Buscar o id_orcamento na tabela orcamentoprograma
-        $id_orcamento = OrcamentoPrograma::where('id_programa', $id_programa)->pluck('id_orcamento')->first();
+                        // Buscar o id_orcamento na tabela orcamentoprograma
+                        $id_orcamento = OrcamentoPrograma::where('id_programa', $id_programa)->pluck('id_orcamento')->first();
 
-        // Buscar o valor do orçamento na tabela orcamento usando o id_orcamento
-        $valor_orcamento = optional(Orcamento::find($id_orcamento))->valor ?? 0;
+                        // Buscar o valor do orçamento na tabela orcamento usando o id_orcamento
+                        $valor_orcamento = optional(Orcamento::find($id_orcamento))->valor ?? 0;
 
-        // Acessar o valor total gasto para este orçamento
-        $valorGastoPrograma = Gasto::where('id_programa', $id_programa)->sum('valor_gasto');
+                        // Acessar o valor total gasto para este orçamento
+                        $valorGastoPrograma = Gasto::where('id_programa', $id_programa)->sum('valor_gasto');
 
-        // Calculando a diferença entre o valor total do orçamento e o valor gasto
-        $valor_disponivel = $valor_orcamento - $valorGastoPrograma;
+                        // Calculando a diferença entre o valor total do orçamento e o valor gasto
+                        $valor_disponivel = $valor_orcamento - $valorGastoPrograma;
 
-        // Retornar o valor disponível para o orçamento
-        return [$id_programa => $valor_disponivel];
-    })
-    ->default(function (Get $get) {
-        $id_programa = $get('id_programa');
+                        // Retornar o valor disponível para o orçamento
+                        return [$id_programa => $valor_disponivel];
+                    })
+                    ->default(function (Get $get) {
+                        $id_programa = $get('id_programa');
 
-        // Buscar o id_orcamento na tabela orcamentoprograma
-        $id_orcamento = OrcamentoPrograma::where('id_programa', $id_programa)->pluck('id_orcamento')->first();
+                        // Buscar o id_orcamento na tabela orcamentoprograma
+                        $id_orcamento = OrcamentoPrograma::where('id_programa', $id_programa)->pluck('id_orcamento')->first();
 
-        // Buscar o valor do orçamento na tabela orcamento usando o id_orcamento
-        $valor_orcamento = optional(Orcamento::find($id_orcamento))->valor ?? 0;
+                        // Buscar o valor do orçamento na tabela orcamento usando o id_orcamento
+                        $valor_orcamento = optional(Orcamento::find($id_orcamento))->valor ?? 0;
 
-        // Retornar o valor do orçamento como a opção padrão
-        return $valor_orcamento;
-    })
-    ->disabled()
-    ->selectablePlaceholder(false),
+                        // Retornar o valor do orçamento como a opção padrão
+                        return $valor_orcamento;
+                    })
+                    ->disabled()
+                    ->selectablePlaceholder(false),
                 Forms\Components\TextInput::make('designacao')
                     ->label("Designação")
                     ->required(fn (string $context): bool => $context === 'create')
@@ -109,23 +109,30 @@ class SubprogramaResource extends Resource
                             // Obtém o ID do programa selecionado
                             $idPrograma = (int) $get('id_programa');
 
-                            $orcamentoProgramaValor = Orcamento::where('id', $idPrograma)->value('valor');
+                            // Buscar o id_orcamento na tabela orcamentoprograma
+                            $id_orcamento = OrcamentoPrograma::where('id_programa', $idPrograma)->pluck('id_orcamento')->first();
 
+                            // Buscar o valor do orçamento na tabela orcamento usando o id_orcamento
+                            $orcamentoProgramaValor = optional(Orcamento::find($id_orcamento))->valor ?? null;
+
+                            // Se não houver registro correspondente na tabela de orçamento, atribuir null a $orcamentoProgramaValor
                             if ($orcamentoProgramaValor === null) {
-                                // Se não houver registro correspondente na tabela de orçamento, atribuir null a $orcamentoProgramaValor
                                 $orcamentoProgramaValor = null;
-                                
                             }
 
-                            return $orcamentoProgramaValor ?? '- Sem Orçamento Disponível';
-// Depura o valor de $orcamentoDisponivel
-                            dd($orcamentoProgramaValor,' - t');
-                            
-                            return 0;
-                            $valorGastoPrograma = Gasto::where('id_programa', $idPrograma)->sum('valor_gasto');
-                            $orcamentoDisponivel = $orcamentoProgramaValor - $valorGastoPrograma;
+                            // Depura o valor de $orcamentoProgramaValor
+                            //dd($orcamentoProgramaValor, ' - t');
 
-                            
+                            // Se o valor do orçamento não estiver disponível, retornar uma mensagem indicando a falta de orçamento
+                            if ($orcamentoProgramaValor === null) {
+                                return '- Sem Orçamento Disponível';
+                            }
+
+                            // Acessar o valor total gasto para este orçamento
+                            $valorGastoPrograma = Gasto::where('id_programa', $idPrograma)->sum('valor_gasto');
+
+                            // Calculando o valor disponível para o orçamento
+                            $orcamentoDisponivel = $orcamentoProgramaValor - $valorGastoPrograma;
 
                             // Verifica se o valor inserido é maior que o orçamento disponível
                             if ($valorInserido > $orcamentoDisponivel) {
@@ -157,18 +164,24 @@ class SubprogramaResource extends Resource
     // No seu recurso Laravel Nova, você pode adicionar um método estático para calcular a diferença
     public static function calcularDiferenca($record)
     {
-        // Access the budget value for the program
-        $orcamentoProgramaValor = optional(optional($record->orcamentoPrograma)->orcamento)->valor ?? 0;
+        // Acessar o id do orçamento do programa
+        $id_orcamento = optional(optional($record->orcamentoPrograma)->orcamento)->id;
 
-        // Access the total amount spent for this program's budget
+        // Buscar o valor do orçamento na tabela orcamento usando o id_orcamento
+        $orcamentoProgramaValor = optional(Orcamento::find($id_orcamento))->valor ?? 0;
+
+        // Acessar o ID do programa
         $idPrograma = optional($record->orcamentoPrograma)->id_programa;
+
+        // Acessar o total gasto para este orçamento
         $valorGastoPrograma = Gasto::where('id_programa', $idPrograma)->sum('valor_gasto');
 
-        // Calculating the difference between the total budget value and the spent amount
+        // Calculando a diferença entre o valor total do orçamento e o valor gasto
         $diferenca = $orcamentoProgramaValor - $valorGastoPrograma;
 
         return $diferenca;
     }
+
 
 
 
@@ -190,14 +203,14 @@ class SubprogramaResource extends Resource
                 Tables\Columns\TextColumn::make('valor')
                     ->label('Valor do Subprograma')
                     ->color('info')
-                    ->money('AOA', divideBy: 100)
+                    ->money('AOA', true)
                     ->numeric()
                     ->icon('heroicon-m-banknotes')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('orcamento_programa_valor_original')
                     ->label('Orçamento Original do Programa')
                     ->numeric()
-                    ->money('AOA', divideBy: 100)
+                    ->money('AOA', true)
                     ->sortable()
                     ->icon('heroicon-m-banknotes')
                     ->color(function ($record) {
@@ -226,7 +239,7 @@ class SubprogramaResource extends Resource
                 Tables\Columns\TextColumn::make('orcamento_programa_valor')
                     ->label('Orçamento Restante')
                     ->numeric()
-                    ->money('AOA', divideBy: 100)
+                    ->money('AOA', true)
                     ->sortable()
                     ->icon('heroicon-m-banknotes')
                     ->color(function ($record) {
@@ -284,7 +297,7 @@ class SubprogramaResource extends Resource
                             ->copyMessageDuration(1500),
                         Components\TextEntry::make('orcamento_programa_valor')
                             ->badge()
-                            ->money('AOA', divideBy: 100)
+                            ->money('AOA', true)
                             ->label('Orçamento Restante do Programa')
                             ->icon('heroicon-m-banknotes')
                             ->color(function ($record) {
@@ -303,7 +316,7 @@ class SubprogramaResource extends Resource
                             ->label('Valor do SubPrograma')
                             ->badge()
                             ->numeric()
-                            ->money('AOA', divideBy: 100)
+                            ->money('AOA', true)
                             ->color(function ($record) {
                                 // Usando o método estático para calcular a diferença
                                 $diferenca = self::calcularDiferenca($record);
