@@ -14,6 +14,7 @@ class Subprograma extends Model
         'id_programa', 
         'designacao', 
         'valor', 
+        'id_criador',
         'created_at', 
         'updated_at'
     ];

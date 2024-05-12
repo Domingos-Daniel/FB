@@ -109,6 +109,8 @@ class SubprogramaPessoaResource extends Resource
                     ->hidden(fn (Get $get) => empty($get('id_programa')))
                     ->columnSpanFull()
                     ->required(fn (string $context): bool => $context === 'create'),
+                Forms\Components\Hidden::make('id_criador')
+                    ->default(auth()->id()),
 
             ]);
     }
@@ -219,13 +221,13 @@ class SubprogramaPessoaResource extends Resource
                             Components\TextEntry::make('subprograma.designacao')
                                 ->badge()
                                 ->color('info'),
-                                Components\TextEntry::make('created_at')
+                            Components\TextEntry::make('created_at')
                                 ->badge()
                                 ->label('Criado em')
                                 ->dateTime(),
                         ])->grow(true),
-                ])->from('md'), 
-    
+                ])->from('md'),
+
                 // Seção de Datas
                 Components\Split::make([
                     Components\Section::make('Datas')
@@ -238,18 +240,18 @@ class SubprogramaPessoaResource extends Resource
                                 ->badge()
                                 ->label('Data de Expiração')
                                 ->dateTime(format: 'd/m/Y'),
-                            
+
                             Components\TextEntry::make('updated_at')
                                 ->badge()
                                 ->label('Atualizado em')
                                 ->dateTime(),
                         ])->grow(true),
                 ])->from('xl'),
-    
+
             ]);
     }
-     
- 
+
+
     public static function getRelations(): array
     {
         return [
@@ -266,5 +268,4 @@ class SubprogramaPessoaResource extends Resource
             'edit' => Pages\EditSubprogramaPessoa::route('/{record}/edit'),
         ];
     }
-
 }

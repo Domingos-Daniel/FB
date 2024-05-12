@@ -12,6 +12,7 @@ class OrcamentoPrograma extends Model
         'id',
         'id_programa',
         'id_orcamento',
+        'id_criador',
         'created_at',
         'updated_at',
     ];

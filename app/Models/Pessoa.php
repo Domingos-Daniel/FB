@@ -21,7 +21,8 @@ class Pessoa extends Model
         'tipo_pessoa',
         'grau_academico',
         'morada',
-        'telefone', 
+        'telefone',
+        'id_criador', 
     ];
 
     public function programas()

@@ -46,8 +46,8 @@ class CreateOrcamentoprograma extends CreateRecord
             Notification::make()
                 ->success()
                 ->duration(5000)
-                ->title('Erro ao atribuir Orcamento')
-                ->body('O programa selecionado, ja possui um orcamento')
+                ->title('Orcamento atribuido')
+                ->body('Orcamento atribuido com sucesso')
                 ->sendToDatabase(\auth()->user())
                 ->send();
 

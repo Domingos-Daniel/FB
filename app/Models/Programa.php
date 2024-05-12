@@ -20,6 +20,7 @@ class Programa extends Model
         'objetivo',
         'metas',
         'responsavel', 
+        'id_criador',
     ];
 
     protected $casts = [

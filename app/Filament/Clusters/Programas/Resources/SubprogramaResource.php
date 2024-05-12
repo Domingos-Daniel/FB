@@ -152,6 +152,8 @@ class SubprogramaResource extends Resource
                             }
                         },
                     ]),
+                Forms\Components\Hidden::make('id_criador')
+                    ->default(auth()->id()),
             ]);
     }
 
@@ -298,7 +300,7 @@ class SubprogramaResource extends Resource
                         Components\TextEntry::make('orcamento_programa_valor')
                             ->badge()
                             ->money('AOA', true)
-                            ->label('Orçamento Restante do Programa')
+                            ->label('Orçamento do Programa')
                             ->icon('heroicon-m-banknotes')
                             ->color(function ($record) {
                                 // Usando o método estático para calcular a diferença

@@ -24,7 +24,7 @@ class OrcamentoprogramaResource extends Resource
     protected static ?string $navigationParentItem = 'Orcamento';
     protected static ?string $modelLabel = 'Atribuição';
     protected static ?string $pluralModelLabel = 'Atribuir Orçamentos'; //Gestão de Orçamentos;
-    
+
     protected static ?string $navigationGroup = 'Gestão Orcamental';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -34,7 +34,7 @@ class OrcamentoprogramaResource extends Resource
     {
         return static::getModel()::count();
     }
-    
+
     public static function form(Form $form): Form
     {
         $programas = Programa::pluck('nome', 'id')->toArray();
@@ -42,23 +42,25 @@ class OrcamentoprogramaResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('id_programa')
-                ->options($programas)
-                ->searchable()
-                ->label("Selecione o Programa Social")
-                ->preload()
-                ->required(fn (string $context): bool => $context === 'create'),
-            Forms\Components\Select::make('id_orcamento')
-                ->options($orcamentos)
-                ->label("Selecione o Orçamento")
-                ->preload()
-                ->searchable()
-                ->required(fn (string $context): bool => $context === 'create'),
-            // Forms\Components\TextInput::make('id_programa')
-            //     ->required()
-            //     ->numeric(),
-            // Forms\Components\TextInput::make('id_orcamento')
-            //     ->required()
-            //     ->numeric(),
+                    ->options($programas)
+                    ->searchable()
+                    ->label("Selecione o Programa Social")
+                    ->preload()
+                    ->required(fn (string $context): bool => $context === 'create'),
+                Forms\Components\Select::make('id_orcamento')
+                    ->options($orcamentos)
+                    ->label("Selecione o Orçamento")
+                    ->preload()
+                    ->searchable()
+                    ->required(fn (string $context): bool => $context === 'create'),
+                Forms\Components\Hidden::make('id_criador')
+                    ->default(auth()->id()),
+                // Forms\Components\TextInput::make('id_programa')
+                //     ->required()
+                //     ->numeric(),
+                // Forms\Components\TextInput::make('id_orcamento')
+                //     ->required()
+                //     ->numeric(),
             ]);
     }
 

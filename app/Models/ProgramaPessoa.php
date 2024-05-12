@@ -17,6 +17,7 @@ class ProgramaPessoa extends Model
         'status',
         'data_inicio',
         'data_fim',
+        'id_criador',
     ];
 
     public function pessoa()

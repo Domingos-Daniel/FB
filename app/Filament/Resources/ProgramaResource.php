@@ -79,7 +79,7 @@ class ProgramaResource extends Resource
                         'Empresa' => 'Empresa',
                     ])
                     ->label('Publico Alvo')
-                    ->native(false)
+                    ->native(false) 
                     ->required(fn (string $context): bool => $context === 'create')
                     ->multiple()
                     ->preload(),
@@ -103,6 +103,8 @@ class ProgramaResource extends Resource
                     ->native(false)
                     ->preload()
                     ->searchable(),
+                Forms\Components\Hidden::make('id_criador')
+                    ->default(auth()->id()),
             ]);
     }
 

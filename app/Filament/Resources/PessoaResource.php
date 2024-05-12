@@ -89,7 +89,7 @@ class PessoaResource extends Resource
                 ])
                     ->required(fn (string $context): bool => $context === 'create')
                     ->searchable()
-                    ->preload(), 
+                    ->preload(),
 
                 Forms\Components\Textarea::make('morada')
                     ->label('Morada / Endereço')
@@ -104,6 +104,8 @@ class PessoaResource extends Resource
                     ->numeric()
                     ->maxLength(9)
                     ->minLength(9),
+                Forms\Components\Hidden::make('id_criador')
+                    ->default(auth()->id()),
             ]);
     }
 
@@ -218,50 +220,50 @@ class PessoaResource extends Resource
             ->schema([
 
                 Components\Split::make([
-                // Seção de Informações Pessoais
-                Components\Section::make('Informações Pessoais')
-                    ->schema([
-                        Components\TextEntry::make('nome')
-                            ->badge()
-                            ->label('Nome')
-                            ->weight(FontWeight::Bold)
-                            ->color('info'),
-                        Components\TextEntry::make('email')
-                            ->badge()
-                            ->label('Email')
-                            ->color('info'),
-                        Components\TextEntry::make('bi')
-                            ->badge()
-                            ->label('BI / Nº de Identificação Fiscal')
-                            ->color('info'),
-                        Components\TextEntry::make('data_nascimento')
-                            ->badge()
-                            ->label('Data de Nascimento')
-                            ->color('info'),
-                        Components\TextEntry::make('genero')
-                            ->badge()
-                            ->label('Gênero')
-                            ->color('info'),
-                        Components\TextEntry::make('grau_academico')
-                            ->badge()
-                            ->label('Grau Acadêmico')
-                            ->color('info'),
-                        Components\TextEntry::make('telefone')
-                            ->badge()
-                            ->label('Telefone / Celular')
-                            ->color('info'),
-                    ])->grow(true),
+                    // Seção de Informações Pessoais
+                    Components\Section::make('Informações Pessoais')
+                        ->schema([
+                            Components\TextEntry::make('nome')
+                                ->badge()
+                                ->label('Nome')
+                                ->weight(FontWeight::Bold)
+                                ->color('info'),
+                            Components\TextEntry::make('email')
+                                ->badge()
+                                ->label('Email')
+                                ->color('info'),
+                            Components\TextEntry::make('bi')
+                                ->badge()
+                                ->label('BI / Nº de Identificação Fiscal')
+                                ->color('info'),
+                            Components\TextEntry::make('data_nascimento')
+                                ->badge()
+                                ->label('Data de Nascimento')
+                                ->color('info'),
+                            Components\TextEntry::make('genero')
+                                ->badge()
+                                ->label('Gênero')
+                                ->color('info'),
+                            Components\TextEntry::make('grau_academico')
+                                ->badge()
+                                ->label('Grau Acadêmico')
+                                ->color('info'),
+                            Components\TextEntry::make('telefone')
+                                ->badge()
+                                ->label('Telefone / Celular')
+                                ->color('info'),
+                        ])->grow(true),
                 ]),
-    
+
                 // Seção de Endereço
                 Components\Split::make([
-                  Components\Section::make('Seção de Endereço') ->schema([
+                    Components\Section::make('Seção de Endereço')->schema([
 
                         Components\TextEntry::make('morada')
                             ->badge()
                             ->label('Morada / Endereço')
                             ->color('info'),
-                    
+
                         Components\TextEntry::make('created_at')
                             ->badge()
                             ->label('Criado em')
@@ -271,10 +273,10 @@ class PessoaResource extends Resource
                             ->label('Atualizado em')
                             ->color('info'),
                     ]),
-                    ])
+                ])
             ]);
     }
-    
+
 
     public static function getRelations(): array
     {

@@ -16,6 +16,7 @@ class SubprogramaPessoa extends Model
         'description',
         'data_inicio',
         'data_fim',
+        'id_criador',
     ];
 
  
