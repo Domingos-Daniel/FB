@@ -100,7 +100,7 @@ class SubprogramaResource extends Resource
                 Forms\Components\TextInput::make('valor')
                     ->required(fn (string $context): bool => $context === 'create')
                     ->numeric()
-                    //->money('AOA', divideBy: 100)
+                    //->money('USD', divideBy: 100)
                     ->rules([
                         fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
                             // Obtém o valor inserido no campo 'valor'
@@ -205,14 +205,14 @@ class SubprogramaResource extends Resource
                 Tables\Columns\TextColumn::make('valor')
                     ->label('Valor do Subprograma')
                     ->color('info')
-                    ->money('AOA', true)
+                    ->money('USD', true)
                     ->numeric()
                     ->icon('heroicon-m-banknotes')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('orcamento_programa_valor_original')
                     ->label('Orçamento Original do Programa')
                     ->numeric()
-                    ->money('AOA', true)
+                    ->money('USD', true)
                     ->sortable()
                     ->icon('heroicon-m-banknotes')
                     ->color(function ($record) {
@@ -241,7 +241,7 @@ class SubprogramaResource extends Resource
                 Tables\Columns\TextColumn::make('orcamento_programa_valor')
                     ->label('Orçamento Restante')
                     ->numeric()
-                    ->money('AOA', true)
+                    ->money('USD', true)
                     ->sortable()
                     ->icon('heroicon-m-banknotes')
                     ->color(function ($record) {
@@ -299,7 +299,7 @@ class SubprogramaResource extends Resource
                             ->copyMessageDuration(1500),
                         Components\TextEntry::make('orcamento_programa_valor')
                             ->badge()
-                            ->money('AOA', true)
+                            ->money('USD', true)
                             ->label('Orçamento do Programa')
                             ->icon('heroicon-m-banknotes')
                             ->color(function ($record) {
@@ -318,7 +318,7 @@ class SubprogramaResource extends Resource
                             ->label('Valor do SubPrograma')
                             ->badge()
                             ->numeric()
-                            ->money('AOA', true)
+                            ->money('USD', true)
                             ->color(function ($record) {
                                 // Usando o método estático para calcular a diferença
                                 $diferenca = self::calcularDiferenca($record);

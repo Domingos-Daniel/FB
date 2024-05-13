@@ -48,7 +48,7 @@ class SubprogramaPessoaRelationManager extends RelationManager
                     ->badge()
                     ->color('info')
                     ->numeric()
-                    ->money('AOA', divideBy: 100)
+                    ->money('USD', divideBy: 100)
                     ->label('Orçamento')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('data_inicio')

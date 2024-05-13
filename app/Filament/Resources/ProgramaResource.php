@@ -131,7 +131,7 @@ class ProgramaResource extends Resource
                 Tables\Columns\TextColumn::make('orcamento')
                     ->label('Orçamento')
                     ->numeric()
-                    ->money('AOA', true)
+                    ->money('USD', true)
                     ->sortable()
                     ->getStateUsing(function ($record) {
                         // Acessar o valor do orçamento associado ao programa
@@ -149,7 +149,7 @@ class ProgramaResource extends Resource
                     ->label('Valor Restante')
                     ->numeric()
                     ->sortable()
-                    ->money('AOA', true)
+                    ->money('USD', true)
                     ->getStateUsing(function ($record) {
                         // Consulta o orçamento associado ao programa
                         $orcamentoPrograma = OrcamentoPrograma::where('id_programa', $record->id)->first();
@@ -242,7 +242,7 @@ class ProgramaResource extends Resource
                     Components\Section::make([
                         Components\TextEntry::make('orcamento.valor')
                             ->numeric()
-                            ->money('AOA', true)
+                            ->money('USD', true)
                             ->color(function ($record) {
                                 // Verifica se o valor do orçamento está disponível no registro
                                 if (isset($record['orcamento']['valor'])) {
@@ -256,13 +256,13 @@ class ProgramaResource extends Resource
                                 // Retorna uma cor padrão caso o valor do orçamento não esteja disponível
                                 return 'danger';
                             })
-                            ->money('AOA', true)
+                            ->money('USD', true)
                             ->badge()
                             ->label('Orçamento'),
 
                         Components\TextEntry::make('diferenca_orcamento_gasto')
                             ->numeric()
-                            ->money('AOA', true)
+                            ->money('USD', true)
                             ->color(function ($record) {
                                 // Verifica se o valor do orçamento está disponível no registro
                                 if (isset($record['orcamento']['valor'])) {
@@ -299,7 +299,7 @@ class ProgramaResource extends Resource
 
                                 return '- Sem Orcamento Associado';
                             })
-                            ->money('AOA', true)
+                            ->money('USD', true)
                             ->label('Orçamento Restando do Programa'),
 
                         Components\TextEntry::make('created_at')
