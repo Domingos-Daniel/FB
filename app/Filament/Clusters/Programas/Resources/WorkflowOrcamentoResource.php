@@ -31,6 +31,9 @@ use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Wizard\Step;
 use Illuminate\Validation\ValidationException;
+use Filament\Forms\Get;
+use Closure;
+use Filament\Forms\Set;
 
 class WorkflowOrcamentoResource extends Resource
 {
@@ -133,8 +136,9 @@ class WorkflowOrcamentoResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('updateStatus')
-                    ->label('Aprovar/Reprovar')
+                    ->label(fn ($record) => $record->status === 'pendente' ? 'Aprovar/Reprovar' : 'Orçamento Processado')
                     ->button()
+                    ->disabled(fn ($record) => $record->status === 'aprovado' || $record->status === 'rejeitado')
                     ->icon('heroicon-o-pencil-square')
                     ->modalHeading('Alterar Status')
                     ->modalButton('Alterar Status')
@@ -151,7 +155,6 @@ class WorkflowOrcamentoResource extends Resource
 
                         // Defina as opções disponíveis
                         $options = [
-                            'pendente' => 'Pendente',
                             'aprovado' => 'Aprovado',
                             'rejeitado' => 'Rejeitado',
                             // Adicione outros estados conforme necessário
@@ -237,7 +240,7 @@ class WorkflowOrcamentoResource extends Resource
                                 else
                                     return 'heroicon-o-exclamation-circle';
                             })
-                            ->weight(FontWeight::Bold)
+                            ->weight(FontWeight::Black)
                             ->color(function ($record) {
                                 // Retorna a cor com base no status
                                 if ($record->status === 'aprovado') {
@@ -251,6 +254,8 @@ class WorkflowOrcamentoResource extends Resource
                         Components\TextEntry::make('motivo_rejeicao')
                             ->badge()
                             ->label('Motivo de Rejeição')
+                            ->html()
+                            ->visible(fn ($record) => $record->status === 'rejeitado')
                             ->color('danger')
                             ->visible(fn ($record) => $record->status === 'rejeitado'),
                         Components\TextEntry::make('prox_passo')
@@ -260,27 +265,35 @@ class WorkflowOrcamentoResource extends Resource
                         Components\TextEntry::make('num_aprovacoes_necessarias')
                             ->badge()
                             ->label('Número de Aprovações Necessárias')
+                            ->default(function (Set $get) {
+                                if ($get('num_aprovacoes_necessarias') === 1) {
+                                    return 'Aprovado';
+                                }elseif ($get('num_aprovacoes_necessarias') === 2) {    
+                                    return 'Rejeitado';
+                                }
+                            })
+                            ->label('Número de Aprovações Necessárias')
                             ->color('info'),
                         Actions::make([
                             InfolistAction::make('status')
-                                ->label('Aprovar Orçamento')
+                                ->label(fn ($record) => $record->status === 'pendente' ? 'Aprovar Orçamento' : 'Orçamento Processado')
                                 ->icon('heroicon-o-check-circle')
-                                ->disabled(fn ($record) => $record->status === 'aprovado')
+                                ->disabled(fn ($record) => $record->status !== 'pendente')
                                 ->requiresConfirmation()
                                 ->action(function (WorkflowOrcamento $record) {
                                     $record->status = "aprovado";
                                     $record->save();
                                 }),
                             InfolistAction::make('updateStatus')
-                                ->label('Reprovar Orçamento')
+                                ->label(fn ($record) => $record->status === 'pendente' ? 'Rejeitar Orçamento' : 'Orçamento Processado')
                                 ->button()
                                 ->icon('heroicon-o-x-circle')
                                 ->modalHeading('Alterar Status')
-                                ->disabled(fn ($record) => $record->status === 'rejeitado')
+                                ->disabled(fn ($record) => $record->status !== 'pendente')
                                 ->modalButton('Próximo')
                                 ->color('danger')
                                 ->steps([
-                                    Step::make('Status')
+                                    Step::make('Status do Orçamento')
                                         ->description('Selecione o status do orçamento')
                                         ->schema([
                                             Select::make('status')
@@ -291,29 +304,38 @@ class WorkflowOrcamentoResource extends Resource
                                                 ])
                                                 ->required(),
                                         ]),
-                                    Step::make('Motivo')
+                                    Step::make('Motivo de Rejeição')
                                         ->description('Forneça um motivo de rejeição (se aplicável)')
                                         ->schema([
                                             MarkdownEditor::make('motivo_rejeicao')
                                                 ->label('Motivo da Rejeição')
                                                 ->required()
                                         ]),
-                                    Step::make('Confirmação')
+                                    Step::make('Confirmação de Ação')
                                         ->description('Confirme a atualização')
                                         ->schema([
                                             TextInput::make('confirmation')
-                                                ->label('Digite "CONFIRMAR" para confirmar esta ação')
+                                                ->label('Confirmação')
+                                                ->label('Esta ação não pode ser desfeita. Se pretende Revogar este orçamento, Digite "CONFIRMAR" para confirmar esta ação')
                                                 ->required()
-                                                ->hint('Confirme a ação')
+                                                ->hint('Confirme a ação aplicada')
+                                                ->rules([
+                                                    fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                                        if ($get('status') === 'rejeitado' && strtolower($value) !== 'confirmar') {
+                                                            $fail('Digite "CONFIRMAR" para confirmar a ação');
+                                                        }
+                                                    }
+                                                ])
                                             //->helpMessage('Digite "confirmar" para confirmar a ação')
                                             ,
                                         ]),
+
                                 ])
 
                                 ->action(function (array $data, WorkflowOrcamento $record): void {
                                     // Validação do campo de confirmação
                                     if ($data['status'] === 'rejeitado' && strtolower($data['confirmation'] ?? '') !== 'confirmar') {
-                                        throw ValidationException::withMessages(['confirmation' => 'Digite "confirmar" para confirmar a ação']);
+                                        throw ValidationException::withMessages(['confirmation' => 'Digite "CONFIRMAR" para confirmar a ação']);
                                     }
                                     $record->status = $data['status'];
 
@@ -336,10 +358,17 @@ class WorkflowOrcamentoResource extends Resource
                     Components\Section::make([
                         Components\TextEntry::make('created_at')
                             ->dateTime(format: "d/m/Y H:i:s")
+                            ->badge()
+                            ->icon(fn ($record) => $record->status === 'pendente' ? 'heroicon-o-clock' : 'heroicon-o-check-circle')
+                            ->color(fn ($record) => $record->status === 'pendente' ? 'info' : 'success')
                             ->label('Criado em'),
                         Components\TextEntry::make('updated_at')
                             ->dateTime(format: "d/m/Y H:i:s")
-                            ->label('Atualizado em'),
+                            ->badge()
+                            ->icon(fn ($record) => $record->status === 'pendente' ? 'heroicon-o-clock' : 'heroicon-o-check-circle')
+                            ->color(fn ($record) => $record->status === 'pendente' ? 'info' : 'success')
+                            ->label(fn ($record) => $record->status === 'pendente' ? 'Atualizado em: ' : 'Processado em: '),
+                        
                     ])->grow(true),
                 ]),
             ]);
