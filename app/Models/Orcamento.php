@@ -33,4 +33,9 @@ class Orcamento extends ApprovableModel
         return $this->hasMany(OrcamentoPrograma::class);
     }
 
+    public function workflow()
+    {
+        return $this->hasOne(WorkflowOrcamento::class, 'orcamento_id');
+    }
+
 }

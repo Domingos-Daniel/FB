@@ -13,7 +13,10 @@ class ListWorkflowOrcamentos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            //Actions\CreateAction::make(),
+            // Actions\EditAction::make()
+            //     ->icon('heroicon-o-pencil')
+            //     ->label('Editar Processo')
+            //     ->color('info'),
         ];
     }
 }

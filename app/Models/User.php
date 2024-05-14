@@ -25,7 +25,7 @@ class User extends Authenticatable implements FilamentUser
     protected $fillable = [
         'name',
         'email',
-        'password',
+        'password', 
     ];
 
     /**
@@ -52,6 +52,11 @@ class User extends Authenticatable implements FilamentUser
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id');
+    }
+
+    public function getModelTypeForPermission(): string
+    {
+        return 'App\Models\User'; // Altere isso para o caminho correto do seu modelo de usuário
     }
 
     public function getActivitylogOptions(): LogOptions

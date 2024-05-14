@@ -281,7 +281,7 @@ class SubprogramaResource extends Resource
 
     public static function infolist(Infolist $infolist): Infolist
     {
-        return $infolist
+        return $infolist 
             ->schema([
                 Components\Split::make([
                     Components\Section::make([

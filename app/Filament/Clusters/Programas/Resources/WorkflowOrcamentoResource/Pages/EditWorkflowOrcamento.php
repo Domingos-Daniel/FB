@@ -20,8 +20,14 @@ class EditWorkflowOrcamento extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
+            Actions\ViewAction::make()
+                ->icon('heroicon-o-eye')
+                ->label('Visualizar Processo')
+                ->color('gray'),
+            // Actions\DeleteAction::make()
+            //     ->icon('heroicon-o-trash')
+            //     ->label('Remover Processo')
+            //     ->color('danger'),
         ];
     }
 }

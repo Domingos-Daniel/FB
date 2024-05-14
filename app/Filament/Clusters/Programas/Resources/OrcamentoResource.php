@@ -7,11 +7,12 @@ use App\Filament\Clusters\Programas\Resources\OrcamentoResource\Pages;
 use App\Filament\Clusters\Programas\Resources\OrcamentoResource\RelationManagers;
 use App\Models\Orcamento;
 use App\Models\Programa;
-use App\Models\WorkflowItem;
+use App\Models\WorkflowOrcamento;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -69,7 +70,7 @@ class OrcamentoResource extends Resource
                     ->numeric(),
                 Forms\Components\RichEditor::make('descricao')
                     ->required()
-                    ->maxLength(255)
+                    ->maxLength(255) 
                     ->label('Descrição do Orçamento'),
                 Forms\Components\Hidden::make('id_criador')
                     ->default(auth()->id()),
@@ -85,11 +86,43 @@ class OrcamentoResource extends Resource
                 Tables\Columns\TextColumn::make('descricao')
                     ->label('Descrição')
                     ->searchable()
+                    ->html()
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('valor')
                     ->numeric()
-                    ->sortable(),
+                    ->label('Valor do Orçamento')
+                    ->money('USD', true)
+                    ->color('info')
+                    ->sortable(), 
+                    Tables\Columns\TextColumn::make('workflow.status')
+                    ->label('Status')
+                    ->sortable()
+                    ->badge()
+                    ->weight(FontWeight::Bold)
+                    ->color(function ($record) {
+                        // Retorna a cor com base na condição ternária
+                        switch ($record->workflow->status) {
+                            case 'aprovado':
+                                return 'success';
+                            case 'rejeitado':
+                                return 'danger';
+                            default:
+                                return 'warning';
+                        }
+                    })
+                    ->icon(function ($record) {
+                        // Retorna o icone com base na condição ternária
+                        switch ($record->workflow->status) {
+                            case 'aprovado':
+                                return 'heroicon-o-check-circle';
+                            case 'rejeitado':
+                                return 'heroicon-o-x-circle';
+                            default:
+                                return 'heroicon-o-exclamation-circle';
+                        }
+                    })
+                    ->searchable(),                
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

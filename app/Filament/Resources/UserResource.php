@@ -16,6 +16,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Request;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
@@ -34,6 +35,11 @@ class UserResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
+    }
+
+    public function getModelTypeForPermission(): string
+    {
+        return 'App\Models\User'; // Altere isso para o caminho correto do seu modelo de usuário
     }
 
     public static function form(Form $form): Form
@@ -63,7 +69,7 @@ class UserResource extends Resource
                     ->multiple()
                     ->searchable()
                     ->required(fn (string $context): bool => $context === 'create')
-                    ->preload(),
+                    ->preload(), 
 
             ]);
     }
