@@ -294,14 +294,17 @@ class WorkflowOrcamentoResource extends Resource
                                 ->color('danger')
                                 ->steps([
                                     Step::make('Status do Orçamento')
-                                        ->description('Selecione o status do orçamento')
+                                        ->description('O status do orçamento esta selecionado como Rejeitado')
                                         ->schema([
                                             Select::make('status')
-                                                ->label('Status')
+                                                ->label('Status do Orçamento, no momento está Pendente')
                                                 ->options([
                                                     'rejeitado' => 'Rejeitado',
                                                     // Adicione outros estados conforme necessário
                                                 ])
+                                                ->native(false)
+                                                ->default('rejeitado')
+                                                ->disabled()
                                                 ->required(),
                                         ]),
                                     Step::make('Motivo de Rejeição')
@@ -309,6 +312,7 @@ class WorkflowOrcamentoResource extends Resource
                                         ->schema([
                                             MarkdownEditor::make('motivo_rejeicao')
                                                 ->label('Motivo da Rejeição')
+                                                ->minLength(20)
                                                 ->required()
                                         ]),
                                     Step::make('Confirmação de Ação')
@@ -318,7 +322,6 @@ class WorkflowOrcamentoResource extends Resource
                                                 ->label('Confirmação')
                                                 ->label('Esta ação não pode ser desfeita. Se pretende Revogar este orçamento, Digite "CONFIRMAR" para confirmar esta ação')
                                                 ->required()
-                                                ->hint('Confirme a ação aplicada')
                                                 ->rules([
                                                     fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
                                                         if ($get('status') === 'rejeitado' && strtolower($value) !== 'confirmar') {
@@ -326,7 +329,6 @@ class WorkflowOrcamentoResource extends Resource
                                                         }
                                                     }
                                                 ])
-                                            //->helpMessage('Digite "confirmar" para confirmar a ação')
                                             ,
                                         ]),
 
