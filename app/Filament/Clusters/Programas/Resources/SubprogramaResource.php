@@ -52,7 +52,7 @@ class SubprogramaResource extends Resource
                     ->options($programas)
                     ->searchable()
                     ->live()
-                    ->native(false)
+                    ->native(false) 
                     ->label("Selecione o Programa Social")
                     ->preload()
                     ->required(fn (string $context): bool => $context === 'create'),
@@ -95,6 +95,7 @@ class SubprogramaResource extends Resource
                     ->selectablePlaceholder(false),
                 Forms\Components\TextInput::make('designacao')
                     ->label("Designação")
+                    ->unique(ignoreRecord: true)
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('valor')

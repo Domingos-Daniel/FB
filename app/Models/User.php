@@ -54,6 +54,15 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id');
     }
 
+    public function workflowOrcamentosCriador()
+    {
+        return $this->hasMany(WorkflowOrcamento::class, 'id_criador');
+    }
+
+    public function workflowOrcamentosProcessadoPor()
+    {
+        return $this->hasMany(WorkflowOrcamento::class, 'processado_por');
+    }
     public function getModelTypeForPermission(): string
     {
         return 'App\Models\User'; // Altere isso para o caminho correto do seu modelo de usuário

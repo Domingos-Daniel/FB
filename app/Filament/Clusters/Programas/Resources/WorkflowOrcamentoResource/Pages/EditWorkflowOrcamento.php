@@ -24,10 +24,9 @@ class EditWorkflowOrcamento extends EditRecord
                 ->icon('heroicon-o-eye')
                 ->label('Visualizar Processo')
                 ->color('gray'),
-            // Actions\DeleteAction::make()
-            //     ->icon('heroicon-o-trash')
-            //     ->label('Remover Processo')
-            //     ->color('danger'),
+            
         ];
     }
+
+    
 }

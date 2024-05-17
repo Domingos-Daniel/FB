@@ -15,6 +15,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\Orcamento;
+use App\Models\User;
 use Filament\Actions\Modal\Actions\Action;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -33,7 +34,14 @@ use Filament\Forms\Components\Wizard\Step;
 use Illuminate\Validation\ValidationException;
 use Filament\Forms\Get;
 use Closure;
+use Filament\Actions\ReplicateAction;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Set;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
+use Filament\Notifications\Actions\Action as NotificationAction;
+use PHPUnit\Framework\TestStatus\Notice;
+use Illuminate\Support\Str;
 
 class WorkflowOrcamentoResource extends Resource
 {
@@ -74,6 +82,7 @@ class WorkflowOrcamentoResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('orcamento.descricao')
                     ->label('Descricao do Orcamento')
+                    ->limit(30)
                     ->html()
                     ->badge()
                     ->color('info')
@@ -112,11 +121,28 @@ class WorkflowOrcamentoResource extends Resource
                 Tables\Columns\TextColumn::make('motivo_rejeicao')
                     ->label('Motivo Rejeição')
                     ->html()
+                    ->getStateUsing(function ($record) {
+                        return $record->status === 'rejeitado' ? $record->motivo_rejeicao : '--';
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('prox_passo')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('processadopor.name')
+                    ->label('Processado Por')
+                    ->searchable()
+                    ->badge()
+                    ->color('info')
+                    ->icon('heroicon-o-user')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('criador.name')
+                    ->label('Criado Por')
+                    ->badge()
+                    ->color('info')
+                    ->icon('heroicon-o-user')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('num_aprovacoes_necessarias')
                     ->numeric()
                     ->sortable()
@@ -135,9 +161,11 @@ class WorkflowOrcamentoResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+
                 Tables\Actions\Action::make('updateStatus')
                     ->label(fn ($record) => $record->status === 'pendente' ? 'Aprovar/Reprovar' : 'Orçamento Processado')
                     ->button()
+                    ->hidden(fn ($record) => $record->status === 'aprovado' || $record->status === 'rejeitado')
                     ->disabled(fn ($record) => $record->status === 'aprovado' || $record->status === 'rejeitado')
                     ->icon('heroicon-o-pencil-square')
                     ->modalHeading('Alterar Status')
@@ -214,7 +242,6 @@ class WorkflowOrcamentoResource extends Resource
                 Components\Split::make([
                     Components\Section::make([
                         Components\TextEntry::make('orcamento.descricao')
-                            ->badge()
                             ->label('Descrição do Orçamento')
                             ->color('info')
                             ->html()
@@ -223,6 +250,7 @@ class WorkflowOrcamentoResource extends Resource
                             ->copyMessageDuration(1500),
                         Components\TextEntry::make('orcamento.valor')
                             ->badge()
+                            ->weight(FontWeight::Bold)
                             ->label('Valor do Orçamento')
                             ->money('USD', true)
                             ->color(function ($record) {
@@ -231,6 +259,7 @@ class WorkflowOrcamentoResource extends Resource
                             }),
                         Components\TextEntry::make('status')
                             ->badge()
+                            ->weight(FontWeight::Bold)
                             ->label('Status')
                             ->icon(function (WorkflowOrcamento $record) {
                                 if ($record->status === 'aprovado')
@@ -252,7 +281,6 @@ class WorkflowOrcamentoResource extends Resource
                                 }
                             }),
                         Components\TextEntry::make('motivo_rejeicao')
-                            ->badge()
                             ->label('Motivo de Rejeição')
                             ->html()
                             ->visible(fn ($record) => $record->status === 'rejeitado')
@@ -260,41 +288,213 @@ class WorkflowOrcamentoResource extends Resource
                             ->visible(fn ($record) => $record->status === 'rejeitado'),
                         Components\TextEntry::make('prox_passo')
                             ->badge()
+                            ->weight(FontWeight::Bold)
                             ->label('Próximo Passo')
-                            ->color('info'),
+                            ->color(function ($record) {
+                                // Retorna a cor com base no proximo passo
+                                if ($record->prox_passo === 'Aprovação Diretor Geral') {
+                                    return 'info';
+                                } else if ($record->prox_passo === 'Aprovação CA Curadores') {
+                                    return 'success';
+                                } else {
+                                    return 'danger';
+                                }
+                            }),
                         Components\TextEntry::make('num_aprovacoes_necessarias')
                             ->badge()
-                            ->label('Número de Aprovações Necessárias')
-                            ->default(function (Set $get) {
-                                if ($get('num_aprovacoes_necessarias') === 1) {
-                                    return 'Aprovado';
-                                }elseif ($get('num_aprovacoes_necessarias') === 2) {    
-                                    return 'Rejeitado';
+                            ->weight(FontWeight::Bold)
+                            ->label('Aprovações Necessárias')
+                            ->getStateUsing(function (WorkflowOrcamento $record) {
+                                if ($record->num_aprovacoes_necessarias === 1) {
+                                    return 'Aprovação do Diretor Geral';
+                                } else if ($record->num_aprovacoes_necessarias === 2) {
+                                    return 'Aprovação do Diretor Geral E Aprovações dos CA Curadores';
+                                } else {
+                                    return 'Desconhecido';
                                 }
                             })
                             ->label('Número de Aprovações Necessárias')
-                            ->color('info'),
+                            ->color(function ($record) {
+                                // Retorna a cor com base no status
+                                if ($record->num_aprovacoes_necessarias === 1) {
+                                    return 'info';
+                                } elseif ($record->num_aprovacoes_necessarias === 2) {
+                                    return 'success';
+                                } else {
+                                    return 'warning';
+                                }
+                            }),
                         Actions::make([
                             InfolistAction::make('status')
                                 ->label(fn ($record) => $record->status === 'pendente' ? 'Aprovar Orçamento' : 'Orçamento Processado')
                                 ->icon('heroicon-o-check-circle')
-                                ->disabled(fn ($record) => $record->status !== 'pendente')
+                                ->disabled(function ($record) {
+                                    $user = auth()->user();
+                                    $userRole = $user->roles()->pluck('name')->first();
+                                    $isDisabled = false;
+                                
+                                    // If the record is in the final stage or rejected, disable it
+                                    if ($record->prox_passo === 'Finalizado' || $record->status === 'rejeitado') {
+                                        return true;
+                                    }
+                                
+                                    // Check if the status is 'pendente'
+                                    if ($record->status === 'pendente') {
+                                        $requiredRole = 'DG';
+                                
+                                        // If only one approval is needed, check the user role
+                                        if ($record->num_aprovacoes_necessarias === 1) {
+                                            if ($userRole !== $requiredRole) {
+                                                return true;
+                                            }
+                                        } 
+                                        // If two approvals are needed, check the user role
+                                        else if ($record->num_aprovacoes_necessarias === 2) {
+                                            if ($userRole !== $requiredRole) {
+                                                return true;
+                                            }
+                                        } 
+                                        // If the number of approvals needed is not 1 or 2, disable it
+                                        else {
+                                            return true;
+                                        }
+                                    } 
+                                    // Check if the status is 'aprovado'
+                                    else if ($record->status === 'aprovado') {
+                                        $requiredRole = 'Admin';
+                                
+                                        // If only one approval is needed, check the user role
+                                        if ($record->num_aprovacoes_necessarias === 1) {
+                                            if ($userRole !== $requiredRole) {
+                                                return true;
+                                            }
+                                        } 
+                                        // If two approvals are needed, check the user role
+                                        else if ($record->num_aprovacoes_necessarias === 2) {
+                                            if ($userRole !== $requiredRole) {
+                                                return true;
+                                            }
+                                        } 
+                                        // If the number of approvals needed is not 1 or 2, disable it
+                                        else {
+                                            return true;
+                                        }
+                                    }
+                                
+                                    return $isDisabled;
+                                })
+                                
+
+
+
                                 ->requiresConfirmation()
                                 ->action(function (WorkflowOrcamento $record) {
                                     $record->status = "aprovado";
+                                    $record->processado_por = auth()->id();
+
+                                    switch ($record->num_aprovacoes_necessarias){
+                                        case 1:
+                                            $record->prox_passo = 'Finalizado';
+                                            break;
+                                        case 2:
+                                            if ($record->prox_passo === 'Aprovação Diretor Geral') {
+
+                                                $record->prox_passo = 'Aprovação CA Curadores';
+                                            } else {
+                                                $record->prox_passo = 'Finalizado';
+                                            }
+
+                                            break;
+                                        default:
+                                            $record->prox_passo = 'Finalizado';
+                                            break;
+                                    }
+
+                                    // if ($record->num_aprovacoes_necessarias === 1) {
+                                    //     $record->prox_passo = 'Finalizado';
+                                    // } 
+                                    // if ($record->num_aprovacoes_necessarias === 2) {
+
+                                    //     if ($record->prox_passo === 'Aprovação Director Geral') {
+
+                                    //         $record->prox_passo = 'Aprovação CA Curadores';
+                                    //     } else {
+                                    //         $record->prox_passo = 'Finalizado';
+                                    //     }
+
+                                    // }
                                     $record->save();
+                                    $id = $record->orcamento_id;
+                                    $status = $record->status;
+                                    WorkflowOrcamentoResource::sendNotifications($id, $status);
                                 }),
                             InfolistAction::make('updateStatus')
                                 ->label(fn ($record) => $record->status === 'pendente' ? 'Rejeitar Orçamento' : 'Orçamento Processado')
                                 ->button()
                                 ->icon('heroicon-o-x-circle')
                                 ->modalHeading('Alterar Status')
-                                ->disabled(fn ($record) => $record->status !== 'pendente')
+                                ->disabled(function ($record) {
+                                    $user = auth()->user();
+                                    $userRole = $user->roles()->pluck('name')->first();
+                                    $isDisabled = false;
+                                
+                                    // If the record is in the final stage or rejected, disable it
+                                    if ($record->prox_passo === 'Finalizado' || $record->status === 'rejeitado') {
+                                        return true;
+                                    }
+                                
+                                    // Check if the status is 'pendente'
+                                    if ($record->status === 'pendente') {
+                                        $requiredRole = 'DG';
+                                
+                                        // If only one approval is needed, check the user role
+                                        if ($record->num_aprovacoes_necessarias === 1) {
+                                            if ($userRole !== $requiredRole) {
+                                                return true;
+                                            }
+                                        } 
+                                        // If two approvals are needed, check the user role
+                                        else if ($record->num_aprovacoes_necessarias === 2) {
+                                            if ($userRole !== $requiredRole) {
+                                                return true;
+                                            }
+                                        } 
+                                        // If the number of approvals needed is not 1 or 2, disable it
+                                        else {
+                                            return true;
+                                        }
+                                    } 
+                                    // Check if the status is 'aprovado'
+                                    else if ($record->status === 'aprovado') {
+                                        $requiredRole = 'Admin';
+                                
+                                        // If only one approval is needed, check the user role
+                                        if ($record->num_aprovacoes_necessarias === 1) {
+                                            if ($userRole !== $requiredRole) {
+                                                return true;
+                                            }
+                                        } 
+                                        // If two approvals are needed, check the user role
+                                        else if ($record->num_aprovacoes_necessarias === 2) {
+                                            if ($userRole !== $requiredRole) {
+                                                return true;
+                                            }
+                                        } 
+                                        // If the number of approvals needed is not 1 or 2, disable it
+                                        else {
+                                            return true;
+                                        }
+                                    }
+                                
+                                    return $isDisabled;
+                                })
+                                
+
                                 ->modalButton('Próximo')
                                 ->color('danger')
                                 ->steps([
                                     Step::make('Status do Orçamento')
-                                        ->description('O status do orçamento esta selecionado como Rejeitado')
+                                        ->description('O status do orçamento está selecionado como Rejeitado')
                                         ->schema([
                                             Select::make('status')
                                                 ->label('Status do Orçamento, no momento está Pendente')
@@ -302,10 +502,11 @@ class WorkflowOrcamentoResource extends Resource
                                                     'rejeitado' => 'Rejeitado',
                                                     // Adicione outros estados conforme necessário
                                                 ])
-                                                ->native(false)
                                                 ->default('rejeitado')
                                                 ->disabled()
                                                 ->required(),
+                                            Hidden::make('processado_por')
+                                                ->default(Auth::id()),
                                         ]),
                                     Step::make('Motivo de Rejeição')
                                         ->description('Forneça um motivo de rejeição (se aplicável)')
@@ -313,38 +514,45 @@ class WorkflowOrcamentoResource extends Resource
                                             MarkdownEditor::make('motivo_rejeicao')
                                                 ->label('Motivo da Rejeição')
                                                 ->minLength(20)
-                                                ->required()
+                                                ->required(),
                                         ]),
                                     Step::make('Confirmação de Ação')
                                         ->description('Confirme a atualização')
                                         ->schema([
                                             TextInput::make('confirmation')
-                                                ->label('Confirmação')
-                                                ->label('Esta ação não pode ser desfeita. Se pretende Revogar este orçamento, Digite "CONFIRMAR" para confirmar esta ação')
+                                                ->label('Esta ação não pode ser desfeita. Se pretende revogar este orçamento, digite "CONFIRMAR" para confirmar esta ação')
                                                 ->required()
                                                 ->rules([
-                                                    fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                                    fn ($get) => function (string $attribute, $value, $fail) use ($get) {
                                                         if ($get('status') === 'rejeitado' && strtolower($value) !== 'confirmar') {
                                                             $fail('Digite "CONFIRMAR" para confirmar a ação');
                                                         }
                                                     }
-                                                ])
-                                            ,
+                                                ]),
                                         ]),
-
                                 ])
-
                                 ->action(function (array $data, WorkflowOrcamento $record): void {
                                     // Validação do campo de confirmação
-                                    if ($data['status'] === 'rejeitado' && strtolower($data['confirmation'] ?? '') !== 'confirmar') {
+                                    if (strtolower($data['confirmation'] ?? '') !== 'confirmar') {
                                         throw ValidationException::withMessages(['confirmation' => 'Digite "CONFIRMAR" para confirmar a ação']);
                                     }
-                                    $record->status = $data['status'];
+                                    if ($record->num_aprovacoes_necessarias === 1) {
+                                        $record->prox_passo = 'Finalizado';
+                                    } elseif ($record->num_aprovacoes_necessarias === 2) {
+                                        if ($record->prox_passo === 'Aprovação Director Geral') {
 
-                                    // Se o status selecionado for 'rejeitado', salva o motivo da rejeição
-                                    if ($data['status'] === 'rejeitado') {
-                                        $record->motivo_rejeicao = $data['motivo_rejeicao'] ?? null;
+                                            $record->prox_passo = 'Aprovação CA Curadores';
+                                        } else {
+                                            $record->prox_passo = 'Finalizado';
+                                        }
                                     }
+                                    $id = $record->orcamento_id;
+                                    $status = $record->status;
+                                    WorkflowOrcamentoResource::sendNotifications($id, $status);
+
+                                    $record->status = 'rejeitado';
+                                    $record->processado_por = $data['processado_por'];
+                                    $record->motivo_rejeicao = $data['motivo_rejeicao'] ?? null;
 
                                     $record->save();
                                 }),
@@ -370,10 +578,105 @@ class WorkflowOrcamentoResource extends Resource
                             ->icon(fn ($record) => $record->status === 'pendente' ? 'heroicon-o-clock' : 'heroicon-o-check-circle')
                             ->color(fn ($record) => $record->status === 'pendente' ? 'info' : 'success')
                             ->label(fn ($record) => $record->status === 'pendente' ? 'Atualizado em: ' : 'Processado em: '),
-                        
+
                     ])->grow(true),
                 ]),
             ]);
+    }
+
+    public static function sendNotifications($id, $status)
+    {
+        try {
+            // Obter o registro de WorkflowOrcamento associado ao orçamento
+            $workflowOrcamento = WorkflowOrcamento::where('orcamento_id', $id)->first();
+
+            // Verificar se o registro foi encontrado
+            if (!$workflowOrcamento) {
+                throw new \Exception('Registro de WorkflowOrcamento não encontrado para o orçamento.');
+            }
+
+            // Mapear os passos do workflow para as roles correspondentes
+            $rolesPorPasso = [
+                'Aprovação Diretor Geral' => 'DG',
+                'Aprovação CA Curadores' => 'Admin',
+                // Adicione mais mapeamentos conforme necessário
+            ];
+
+            // Obter o próximo passo do workflow
+            $proximoPasso = $workflowOrcamento->prox_passo;
+            $idWorkflow = $workflowOrcamento->id;
+
+            if ($proximoPasso === 'Finalizado') {
+                Notification::make()
+                    ->persistent()
+                    ->title('Orçamento Finalizado')
+                    ->body('O orçamento foi finalizado com sucesso!')
+                    ->success()
+                    ->send();
+                return 0;
+            }
+
+            // Verificar se há uma role correspondente para o próximo passo
+            if (!isset($rolesPorPasso[$proximoPasso])) {
+                throw new \Exception('Nenhuma role encontrada para o próximo passo: ' . $proximoPasso);
+            }
+
+            // Encontrar os usuários que possuem a role correspondente ao próximo passo
+            $usuariosProximoPasso = User::role($rolesPorPasso[$proximoPasso])->get();
+
+            if ($usuariosProximoPasso->isEmpty()) {
+                throw new \Exception('Nenhum usuário encontrado para o próximo passo: ' . $proximoPasso);
+            }
+
+            // Enviar notificações para cada usuário encontrado
+            foreach ($usuariosProximoPasso as $usuario) {
+                $notification = Notification::make()
+                    ->persistent()
+                    ->actions([
+                        NotificationAction::make('view')
+                            ->label('Visualizar Orçamento')
+                            ->button()
+                            ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
+                    ]);
+
+                if ($status === 'aprovado') {
+                    if ($proximoPasso === 'Aprovação CA Curadores') {
+                        $notification->title('Novo Orçamento por Aprovar')
+                            ->body('Há um novo orçamento a ser aprovado. Por favor, verifique!')
+                            ->warning()
+                            ->color('warning');
+                    } elseif ($proximoPasso === 'Finalizado') {
+                        $notification->title('Orçamento aprovado')
+                            ->body('O orçamento foi aprovado com sucesso!')
+                            ->success()
+                            ->color('success');
+                    }
+                } elseif ($status === 'reprovado' && $proximoPasso === 'Finalizado') {
+                    $notification->title('Orçamento reprovado')
+                        ->body('O orçamento foi reprovado com sucesso!')
+                        ->danger()
+                        ->color('danger');
+                }
+
+                $notification->sendToDatabase($usuario);
+            }
+
+            // Notificação de sucesso para o usuário atual
+            Notification::make()
+                ->title('Notificação Enviada')
+                ->body('Foi enviada uma notificação para ' . $proximoPasso . ' com sucesso. O orçamento será avaliado!')
+                ->info()
+                ->persistent()
+                ->sendToDatabase(auth()->user());
+        } catch (\Exception $e) {
+            // Notificação de erro
+            Notification::make()
+                ->title('Erro ao enviar notificação')
+                ->body('Erro ao enviar notificação para o próximo passo do workflow: ' . $e->getMessage())
+                ->danger()
+                ->persistent()
+                ->send();
+        }
     }
 
 

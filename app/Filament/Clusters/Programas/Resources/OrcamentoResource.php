@@ -66,11 +66,14 @@ class OrcamentoResource extends Resource
                 //     ->required(fn (string $context): bool => $context === 'create'),
                 Forms\Components\TextInput::make('valor')
                     ->label("Valor do Orçamento")
+                    ->unique(ignoreRecord: true)
                     ->required()
                     ->numeric(),
                 Forms\Components\RichEditor::make('descricao')
                     ->required()
-                    ->maxLength(255) 
+                    ->unique(ignoreRecord: true)
+                    ->minLength(20)
+                    ->maxLength(1024) 
                     ->label('Descrição do Orçamento'),
                 Forms\Components\Hidden::make('id_criador')
                     ->default(auth()->id()),
@@ -84,8 +87,10 @@ class OrcamentoResource extends Resource
         
             ->columns([
                 Tables\Columns\TextColumn::make('descricao')
-                    ->label('Descrição')
                     ->searchable()
+                    ->label('Descricao do Orcamento')
+                    ->limit(30)
+                    ->badge()
                     ->html()
                     ->sortable(),
                     

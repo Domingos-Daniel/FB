@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\WorkflowOrcamento;
+use Filament\Notifications\Notification;
 
 class WorkflowOrcamentoObserver
 {
@@ -11,7 +12,6 @@ class WorkflowOrcamentoObserver
      */
     public function created(WorkflowOrcamento $workflowOrcamento): void
     {
-        
     }
 
     /**
@@ -19,7 +19,11 @@ class WorkflowOrcamentoObserver
      */
     public function updated(WorkflowOrcamento $workflowOrcamento): void
     {
-        //
+        Notification::make()
+            ->title('Observer')
+            ->body('The WorkflowOrcamento was updated!')
+            ->danger()
+            ->sendToDatabase(\auth()->user());
     }
 
     /**

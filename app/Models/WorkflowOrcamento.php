@@ -17,12 +17,25 @@ class WorkflowOrcamento extends Model
         'prox_passo',
         'num_aprovacoes_necessarias',
         'motivo_rejeicao',
+        'id_criador',
+        'processado_por'
     ];
 
     public function orcamento()
     {
         return $this->belongsTo(Orcamento::class);
     }
+
+    public function criador()
+    {
+        return $this->belongsTo(User::class, 'id_criador');
+    }
+
+    public function processadopor()
+    {
+        return $this->belongsTo(User::class, 'processado_por');
+    }
+
 
     public function approve()
     {

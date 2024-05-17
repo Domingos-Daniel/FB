@@ -64,6 +64,8 @@ class CreateOrcamento extends CreateRecord
         try {
             // Obtém o ID do orçamento associado ao programa
             $orcamentoId = $this->record['id'] ?? null;
+            $id_criador = $this->record['id_criador'] ?? null;
+            $processado_por = $this->record['id_criador'] ?? null;
 
             // Verifica se o ID do orçamento foi obtido
             if ($orcamentoId === null) {
@@ -94,6 +96,8 @@ class CreateOrcamento extends CreateRecord
                 'status' => 'pendente', // Status inicial como "pendente"
                 'prox_passo' => 'Aprovação Diretor Geral', // Próximo passo do workflow
                 'num_aprovacoes_necessarias' => ($valorOrcamento > 500000) ? 2 : 1, // Número de aprovações necessárias
+                'id_criador' => $id_criador, //id do criador do orcamento
+                'processado_por' => $processado_por,
             ]);
 
 
@@ -168,6 +172,8 @@ class CreateOrcamento extends CreateRecord
                         ->persistent()
                         ->actions([
                             Action::make('view')
+                                ->label('Visualizar Orçamento')
+                                ->color('warning')
                                 ->button()
                                 ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
                         ])
