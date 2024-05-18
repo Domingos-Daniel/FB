@@ -121,6 +121,7 @@ class WorkflowOrcamentoResource extends Resource
                 Tables\Columns\TextColumn::make('motivo_rejeicao')
                     ->label('Motivo Rejeição')
                     ->html()
+                    ->limit(20)
                     ->getStateUsing(function ($record) {
                         return $record->status === 'rejeitado' ? $record->motivo_rejeicao : '--';
                     })
@@ -261,6 +262,7 @@ class WorkflowOrcamentoResource extends Resource
                             ->badge()
                             ->weight(FontWeight::Bold)
                             ->label('Status')
+                            ->html()
                             ->getStateUsing(function (WorkflowOrcamento $record) {
                                 if ($record->num_aprovacoes_necessarias === 1) {
                                     return $record->status;
@@ -269,6 +271,8 @@ class WorkflowOrcamentoResource extends Resource
                                         return '1ª Etapa: ' . $record->status;
                                     } else if ($record->prox_passo === 'Finalizado') {
                                         return '2ª Etapa: ' . $record->status;
+                                    } else {
+                                        return '<b>Pendente</b> Nenhum do aprovadores processou';
                                     }
                                 } else {
                                     return 'Desconhecido';
@@ -423,7 +427,15 @@ class WorkflowOrcamentoResource extends Resource
                                     $record->save();
                                     $id = $record->orcamento_id;
                                     $status = $record->status;
-                                    WorkflowOrcamentoResource::sendNotifications($id, $status);
+                                    $prox = $record->prox_passo;
+                                    // Notificação de sucesso para o usuário atual
+                                    Notification::make()
+                                        ->title('Notificação Enviada')
+                                        ->body('Foi enviada uma notificação para o usuário com sucesso.')
+                                        ->info()
+                                        ->persistent()
+                                        ->sendToDatabase(auth()->user());
+                                    WorkflowOrcamentoResource::sendNotifications($id, $status, $prox);
                                 }),
                             InfolistAction::make('updateStatus')
                                 ->label(fn ($record) => $record->status === 'pendente' ? 'Rejeitar Orçamento' : 'Orçamento Processado')
@@ -545,13 +557,22 @@ class WorkflowOrcamentoResource extends Resource
                                     }
                                     $id = $record->orcamento_id;
                                     $status = $record->status;
-                                    WorkflowOrcamentoResource::sendNotifications($id, $status);
+                                    $prox = $record->prox_passo;
+                                    WorkflowOrcamentoResource::sendNotifications($id, $status, $prox);
 
                                     $record->status = 'rejeitado';
                                     $record->processado_por = $data['processado_por'];
                                     $record->motivo_rejeicao = $data['motivo_rejeicao'] ?? null;
 
                                     $record->save();
+
+                                    // Notificação de sucesso para o usuário atual
+                                    Notification::make()
+                                        ->title('Notificação Enviada')
+                                        ->body('Foi enviada uma notificação para o usuário com sucesso.')
+                                        ->info()
+                                        ->persistent()
+                                        ->sendToDatabase(auth()->user());
                                 }),
 
 
@@ -592,7 +613,7 @@ class WorkflowOrcamentoResource extends Resource
             ]);
     }
 
-    public static function sendNotifications($id, $status)
+    public static function sendNotifications($id, $status, $prox)
     {
         try {
             // Obter o registro de WorkflowOrcamento associado ao orçamento
@@ -625,17 +646,18 @@ class WorkflowOrcamentoResource extends Resource
             $criador = User::find($workflowOrcamento->id_criador);
 
             // Verificar se o workflow está finalizado
-            if ($proximoPasso === 'Finalizado') {
+            if ($prox === 'Finalizado') {
                 // Enviar notificação para o criador
                 if ($criador) {
                     Notification::make()
                         ->persistent()
                         ->title('Orçamento Finalizado')
-                        ->body('O orçamento foi finalizado com sucesso!')
-                        ->success()
+                        ->body('O seu orçamento foi finalizado, por favor consulte o status!')
+                        ->info()
                         ->actions([
                             NotificationAction::make('view')
                                 ->label('Visualizar Orçamento')
+                                ->color('info')
                                 ->button()
                                 ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
                         ])
@@ -645,72 +667,8 @@ class WorkflowOrcamentoResource extends Resource
                 return 0;
             }
 
-            // Verificar se há uma role correspondente para o próximo passo
-            if (!isset($rolesPorPasso[$proximoPasso])) {
-                throw new \Exception('Nenhuma role encontrada para o próximo passo: ' . $proximoPasso);
-            }
-
-            // Encontrar os usuários que possuem a role correspondente ao próximo passo
-            $usuariosProximoPasso = User::role($rolesPorPasso[$proximoPasso])->get();
-
-            if ($usuariosProximoPasso->isEmpty()) {
-                throw new \Exception('Nenhum usuário encontrado para o próximo passo: ' . $proximoPasso);
-            }
-
-            // Enviar notificações para cada usuário encontrado
-            foreach ($usuariosProximoPasso as $usuario) {
-            
-
-                if ($status === 'aprovado') {
-                    if ($proximoPasso === 'Aprovação CA Curadores') {
-                        Notification::make()
-                            ->persistent()
-                            ->title('Novo Orçamento por Aprovar')
-                            ->body('Há um novo orçamento a ser aprovado. Por favor, verifique!')
-                            ->warning()
-                            ->color('warning')
-                            ->actions([
-                                NotificationAction::make('view')
-                                    ->label('Visualizar Orçamento')
-                                    ->button()
-                                    ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
-                            ])
-                            ->sendToDatabase($usuario);
-                    } elseif ($proximoPasso === 'Finalizado') {
-                        Notification::make()
-                            ->persistent()
-                            ->title('Orçamento aprovado')
-                            ->body('O orçamento foi aprovado com sucesso!')
-                            ->success()
-                            ->color('success')
-                            ->actions([
-                                NotificationAction::make('view')
-                                    ->label('Visualizar Orçamento')
-                                    ->button()
-                                    ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
-                            ])
-                            ->sendToDatabase($usuario);
-                    }
-                } elseif ($status === 'reprovado' && $proximoPasso === 'Finalizado') {
-                    Notification::make()
-                        ->persistent()
-                        ->title('Orçamento reprovado')
-                        ->body('O orçamento foi reprovado, por favor, veja os detalhes!')
-                        ->danger()
-                        ->color('danger')
-                        ->actions([
-                            NotificationAction::make('view')
-                                ->label('Visualizar Orçamento')
-                                ->button()
-                                ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
-                        ])
-                        ->sendToDatabase($usuario);
-                }
-
-            }
-
             // Enviar notificações se o orçamento foi reprovado
-            if ($status === 'reprovado') {
+            if ($status === 'rejeitado') {
                 // Notificação para o criador
                 if ($criador) {
                     Notification::make()
@@ -721,6 +679,7 @@ class WorkflowOrcamentoResource extends Resource
                         ->actions([
                             NotificationAction::make('view')
                                 ->label('Visualizar Orçamento')
+                                ->color('danger')
                                 ->button()
                                 ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
                         ])
@@ -739,6 +698,7 @@ class WorkflowOrcamentoResource extends Resource
                             ->actions([
                                 NotificationAction::make('view')
                                     ->label('Visualizar Orçamento')
+                                    ->color('danger')
                                     ->button()
                                     ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
                             ])
@@ -747,19 +707,53 @@ class WorkflowOrcamentoResource extends Resource
                 }
             }
 
-            // Notificação de sucesso para o usuário atual
-            Notification::make()
-                ->title('Notificação Enviada')
-                ->body('Foi enviada uma notificação para ' . $proximoPasso . ' com sucesso. O orçamento será avaliado!')
-                ->info()
-                ->persistent()
-                ->actions([
-                    NotificationAction::make('view')
-                        ->label('Visualizar Orçamento')
-                        ->button()
-                        ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
-                ])
-                ->sendToDatabase(auth()->user());
+            // Verificar se há uma role correspondente para o próximo passo
+            if (!isset($rolesPorPasso[$proximoPasso])) {
+                throw new \Exception('Nenhuma role encontrada para o próximo passo: ' . $proximoPasso);
+            }
+
+            // Encontrar os usuários que possuem a role correspondente ao próximo passo
+            $usuariosProximoPasso = User::role($rolesPorPasso[$proximoPasso])->get();
+
+            if ($usuariosProximoPasso->isEmpty()) {
+                throw new \Exception('Nenhum usuário encontrado para o próximo passo: ' . $proximoPasso);
+            }
+
+            // Enviar notificações para cada usuário encontrado
+            foreach ($usuariosProximoPasso as $usuario) {
+                if ($status === 'aprovado') {
+                    if ($proximoPasso === 'Aprovação CA Curadores') {
+                        Notification::make()
+                            ->persistent()
+                            ->title('Novo Orçamento por Aprovar')
+                            ->body('Há um novo orçamento a ser aprovado. Por favor, verifique!')
+                            ->warning()
+                            ->color('warning')
+                            ->actions([
+                                NotificationAction::make('view')
+                                    ->label('Visualizar Orçamento')
+                                    ->color('warning')
+                                    ->button()
+                                    ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
+                            ])
+                            ->sendToDatabase($usuario);
+                    }
+                } elseif ($status === 'rejeitado') {
+                    Notification::make()
+                        ->persistent()
+                        ->title('Orçamento reprovado')
+                        ->body('O orçamento foi reprovado, por favor, veja os detalhes!')
+                        ->danger()
+                        ->actions([
+                            NotificationAction::make('view')
+                                ->label('Visualizar Orçamento')
+                                ->color('danger')
+                                ->button()
+                                ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
+                        ])
+                        ->sendToDatabase($usuario);
+                }
+            }
         } catch (\Exception $e) {
             // Notificação de erro
             Notification::make()
@@ -769,6 +763,7 @@ class WorkflowOrcamentoResource extends Resource
                 ->actions([
                     NotificationAction::make('view')
                         ->label('Visualizar Orçamento')
+                        ->color('warning')
                         ->button()
                         ->url(route('filament.admin.programas.resources.workflow-orcamentos.view', $idWorkflow)),
                 ])
