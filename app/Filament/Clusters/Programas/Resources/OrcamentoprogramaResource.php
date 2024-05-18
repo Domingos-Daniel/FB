@@ -38,7 +38,16 @@ class OrcamentoprogramaResource extends Resource
     public static function form(Form $form): Form
     {
         $programas = Programa::pluck('nome', 'id')->toArray();
-        $orcamentos = Orcamento::pluck('valor', 'id')->toArray();
+        $orcamentos = Orcamento::join('workflow_orcamento', 'orcamentos.id', '=', 'workflow_orcamento.orcamento_id')
+            ->where('workflow_orcamento.status', 'aprovado')
+            ->where('workflow_orcamento.prox_passo', 'Finalizado')
+            ->pluck('orcamentos.valor', 'orcamentos.id')
+            ->toArray();
+        $orcamentosFormatados = [];
+        foreach ($orcamentos as $id => $valor) {
+            $orcamentosFormatados[$id] = number_format($valor, 2, ',', '.'); // Formatar para 2 casas decimais, usando vírgula como separador decimal e ponto como separador de milhar
+        }
+
         return $form
             ->schema([
                 Forms\Components\Select::make('id_programa')
@@ -48,8 +57,10 @@ class OrcamentoprogramaResource extends Resource
                     ->preload()
                     ->required(fn (string $context): bool => $context === 'create'),
                 Forms\Components\Select::make('id_orcamento')
-                    ->options($orcamentos)
+                    ->options($orcamentosFormatados)
                     ->label("Selecione o Orçamento")
+                    ->prefixIcon('heroicon-o-currency-dollar')
+                    ->prefixIconColor('success')
                     ->preload()
                     ->searchable()
                     ->required(fn (string $context): bool => $context === 'create'),
