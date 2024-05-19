@@ -11,6 +11,7 @@ use App\Models\gasto;
 use App\Models\Orcamento;
 use App\Models\OrcamentoPrograma;
 use App\Models\Programa;
+use App\Models\Subprograma;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -130,6 +131,8 @@ class ProgramaResource extends Resource
                     ->label('Publico Alvo'),
                 Tables\Columns\TextColumn::make('orcamento')
                     ->label('Orçamento')
+                    ->badge()
+                    ->color('success')
                     ->numeric()
                     ->money('USD', true)
                     ->sortable()
@@ -148,6 +151,8 @@ class ProgramaResource extends Resource
                 Tables\Columns\TextColumn::make('diferenca_orcamento_gasto')
                     ->label('Valor Restante')
                     ->numeric()
+                    ->badge()
+                    ->color(fn ($record) => $record->diferenca_orcamento_gasto > 100000 ? 'danger' : 'success')
                     ->sortable()
                     ->money('USD', true)
                     ->getStateUsing(function ($record) {
@@ -173,7 +178,13 @@ class ProgramaResource extends Resource
                         return '- Sem Orcamento Associado';
                     }),
 
-
+                Tables\Columns\TextColumn::make('numero_subprograma')
+                    ->label('Numero de Subprogramas')
+                    ->getStateUsing(function ($record) {
+                        return Subprograma::where('id_programa', $record->id)->count();
+                    })
+                    ->badge()
+                    ->color('info'),
                 Tables\Columns\TextColumn::make('responsavel')
                     ->searchable()
                     ->badge()
@@ -234,6 +245,13 @@ class ProgramaResource extends Resource
                             ->label('Responsável do Programa')
                             ->badge()
                             ->color('success'),
+                        Components\TextEntry::make('numero_subprograma')
+                            ->label('Numero de Subprogramas')
+                            ->color('info')
+                            ->badge()
+                            ->getStateUsing(function ($record) {
+                                return Subprograma::where('id_programa', $record->id)->count();
+                            }),
                     ])->grow(true),
                 ])->from('md'),
 

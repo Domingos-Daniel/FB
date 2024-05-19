@@ -45,9 +45,13 @@ use Illuminate\Support\Str;
 
 class WorkflowOrcamentoResource extends Resource
 {
-    protected static ?string $model = WorkflowOrcamento::class;
+    protected static ?string $model = WorkflowOrcamento::class; 
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-credit-card';
+    protected static ?string $navigationGroup = 'Gestão Orçamental';
+    protected static ?string $modelLabel = 'WorkFlow';
+    protected static ?string $pluralModelLabel = 'WorkFlows'; 
+    
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Programas::class;

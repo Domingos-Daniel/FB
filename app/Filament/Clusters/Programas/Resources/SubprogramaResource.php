@@ -216,13 +216,7 @@ class SubprogramaResource extends Resource
                     ->money('USD', true)
                     ->sortable()
                     ->icon('heroicon-m-banknotes')
-                    ->color(function ($record) {
-                        // Usando o método estático para calcular a diferença
-                        $diferenca = self::calcularDiferenca($record);
-
-                        // Retorna a cor com base na condição ternária
-                        return $diferenca < 1000000 ? 'danger' : 'success';
-                    })
+                    ->color('success')
                     ->getStateUsing(function ($record) {
 
                         // Acessar o valor original do orçamento do programa a partir da relação definida no modelo Subprograma
@@ -250,7 +244,7 @@ class SubprogramaResource extends Resource
                         $diferenca = self::calcularDiferenca($record);
 
                         // Retorna a cor com base na condição ternária
-                        return $diferenca < 1000000 ? 'danger' : 'success';
+                        return $diferenca < 100000 ? 'danger' : 'success';
                     })
                     ->getStateUsing(function ($record) {
                         // Usando o método estático para calcular a diferença
@@ -268,7 +262,7 @@ class SubprogramaResource extends Resource
             ->filters([
                 //
 
-            ])
+            ]) 
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
@@ -340,6 +334,11 @@ class SubprogramaResource extends Resource
                         Components\TextEntry::make('updated_at')
                             ->dateTime(format: "d/m/Y H:i:s")
                             ->label('Atualizado em'),
+                        Components\TextEntry::make('criador.name')
+                            ->badge()
+                            ->icon('heroicon-o-user')
+                            ->color('info')
+                            ->label('Criado Por'),
                     ])->grow(true),
                 ]),
 

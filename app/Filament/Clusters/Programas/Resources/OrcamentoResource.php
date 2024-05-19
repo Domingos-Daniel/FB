@@ -24,10 +24,10 @@ class OrcamentoResource extends Resource
     protected static ?string $model = Orcamento::class;
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $modelLabel = 'Orçamento';
     protected static ?string $pluralModelLabel = 'Orçamentos';
-    protected static ?string $navigationGroup = 'Gestão Orcamental';
+    protected static ?string $navigationGroup = 'Gestão Orçamental';
     protected static ?string $cluster = Programas::class;
 
     public static function getNavigationBadge(): ?string

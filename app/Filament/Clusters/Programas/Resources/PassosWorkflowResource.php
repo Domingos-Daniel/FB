@@ -19,7 +19,12 @@ class PassosWorkflowResource extends Resource
 {
     protected static ?string $model = PassosWorkflow::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $modelLabel = 'Passos do Workflow';
+    protected static ?string $pluralModelLabel = 'Passos dos Workflows';
+    protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
+    
+    protected static ?string $navigationGroup = 'Gestão Orçamental';
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Programas::class; 

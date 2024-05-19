@@ -30,6 +30,11 @@ class Pessoa extends Model
         return $this->belongsToMany(ProgramaPessoa::class, 'programa_pessoa');
     }
 
+    public function criador()
+    {
+        return $this->belongsTo(User::class, 'id_criador');
+    }
+
     public function subprograma()
     {
         return $this->hasMany(Subprograma::class, 'id', 'id_subprograma');

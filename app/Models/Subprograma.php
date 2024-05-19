@@ -24,6 +24,11 @@ class Subprograma extends Model
         return $this->belongsTo(Orcamento::class, 'id_orcamento');
     }
 
+    public function criador()
+    {
+        return $this->belongsTo(User::class, 'id_criador');
+    }
+
     public function pessoa()
     {
         return $this->belongsTo(Pessoa::class, 'id_pessoa');

@@ -22,6 +22,11 @@ class Orcamento extends ApprovableModel
     {
         return $this->belongsTo(Programa::class, 'id_programa');
     }
+
+    public function criador()
+    {
+        return $this->belongsTo(User::class, 'id_criador');
+    }
  
     public function subprograma()
     {

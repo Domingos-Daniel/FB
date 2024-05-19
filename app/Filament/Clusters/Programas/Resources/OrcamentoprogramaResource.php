@@ -8,8 +8,10 @@ use App\Filament\Clusters\Programas\Resources\OrcamentoprogramaResource\Relation
 use App\Models\Orcamentoprograma;
 use App\Models\Programa;
 use App\Models\Orcamento;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -25,8 +27,8 @@ class OrcamentoprogramaResource extends Resource
     protected static ?string $modelLabel = 'Atribuição';
     protected static ?string $pluralModelLabel = 'Atribuir Orçamentos'; //Gestão de Orçamentos;
 
-    protected static ?string $navigationGroup = 'Gestão Orcamental';
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Gestão Orçamental';
+    protected static ?string $navigationIcon = 'heroicon-o-plus-circle';
 
     protected static ?string $cluster = Programas::class;
 
@@ -37,7 +39,10 @@ class OrcamentoprogramaResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $programas = Programa::pluck('nome', 'id')->toArray();
+        $programas = Programa::whereNotIn('id', function($query) {
+            $query->select('id_programa')->from('orcamento_programas');
+        })->pluck('nome', 'id')->toArray();
+        
         $orcamentos = Orcamento::join('workflow_orcamento', 'orcamentos.id', '=', 'workflow_orcamento.orcamento_id')
             ->where('workflow_orcamento.status', 'aprovado')
             ->where('workflow_orcamento.prox_passo', 'Finalizado')
@@ -51,10 +56,9 @@ class OrcamentoprogramaResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('id_programa')
-                    ->options($programas)
+                    ->options($programas) 
                     ->searchable()
                     ->label("Selecione o Programa Social")
-                    ->preload()
                     ->required(fn (string $context): bool => $context === 'create'),
                 Forms\Components\Select::make('id_orcamento')
                     ->options($orcamentosFormatados)
