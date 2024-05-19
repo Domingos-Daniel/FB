@@ -6,40 +6,50 @@ use App\Models\Programa;
 use App\Models\Subprograma;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
+use Flowframe\Trend\Trend;
+use Flowframe\Trend\TrendValue;
 
 class SubprogramsByProgramChart extends ChartWidget
 {
     //protected static ?string $heading = 'Chart';
     protected static bool $isLazy = false;
     protected static ?string $heading = 'Subprogramas por Programa';
-    protected static ?string $pollingInterval = '30s'; // Atualização a cada 30 segundos
+    protected static ?string $pollingInterval = '30s'; // Atualização a cada 10 segundos
 
 
     
     protected function getData(): array
     {
-        
-        // Consultar o número de subprogramas por programa
-        $programs = Programa::withCount('subprograma')->get();
+        // Consultar o número total de subprogramas por programa usando Trend
+        $programas = Programa::with('subprograma')->get();
 
-        $labels = $programs->pluck('nome')->toArray();
-        $data = $programs->pluck('subprograma_count')->toArray();
-        $totalSubprograms = Subprograma::count();
+        // Agrupar e contar subprogramas por programa
+        $data = $programas->map(function ($programa) {
+            return [
+                'nome' => $programa->nome,
+                'subprograma_count' => $programa->subprograma()->count(),
+            ];
+        });
+
+        $labels = $data->pluck('nome')->toArray();
+        $subprogramsCount = $data->pluck('subprograma_count')->toArray();
 
         return [
             'labels' => $labels,
             'datasets' => [
                 [
-                    'label' => 'Número de Subprogramas',
-                    'data' => $data,
+                    'label' => 'Total de Subprogramas',
+                    'data' => $subprogramsCount,
                     'backgroundColor' => '#36A2EB',
                     'borderColor' => '#9BD0F5',
                     'borderWidth' => 1,
-                    'barPercentage' => 0.5,
+                    'barPercentage'=> 0.5,
+                    
                 ],
             ],
         ];
     }
+
 
     protected function getOptions(): array
     {
