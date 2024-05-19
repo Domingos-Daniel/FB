@@ -44,6 +44,7 @@ class PessoaResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('nome')
+                ->label('Nome do Beneficiario')
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
@@ -70,15 +71,16 @@ class PessoaResource extends Resource
                         'Outro' => 'Outro',
                     ])
                     ->required(fn (string $context): bool => $context === 'create'),
-                Forms\Components\Select::make('grau_academico')->options([
-                    'Ensino Geral' => 'Ensino Geral',
-                    'Ensino Medio' => 'Ensino Medio',
-                    'Bacharel' => 'Bacharel',
-                    'Licenciado' => 'Licenciado',
-                    'Msc' => 'Msc',
-                    'PHD' => 'PHD',
-                    'Outro' => 'Outro',
-                ])
+                Forms\Components\Select::make('grau_academico')
+                    ->options([
+                        'Ensino Geral' => 'Ensino Geral',
+                        'Ensino Medio' => 'Ensino Medio',
+                        'Bacharel' => 'Bacharel',
+                        'Licenciado' => 'Licenciado',
+                        'Msc' => 'Msc',
+                        'PHD' => 'PHD',
+                        'Outro' => 'Outro',
+                    ])
                     ->required(fn (string $context): bool => $context === 'create')
                     ->searchable()
                     ->preload(),
@@ -89,12 +91,15 @@ class PessoaResource extends Resource
                 ])
                     ->required(fn (string $context): bool => $context === 'create')
                     ->searchable()
+                    ->label('Tipo de Beneficiario')
+                    ->columnSpanFull()
                     ->preload(),
 
                 Forms\Components\Textarea::make('morada')
                     ->label('Morada / Endereço')
                     ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(65535)
+                    ->maxLength(100)
+                    ->rows(5)
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('telefone')
                     ->label('Telefone / Celular')
@@ -102,7 +107,7 @@ class PessoaResource extends Resource
                     ->telRegex('/^\d{9}$/')
                     ->required(fn (string $context): bool => $context === 'create')
                     ->numeric()
-                    ->maxLength(9)
+                    ->maxLength(9) 
                     ->minLength(9),
                 Forms\Components\Hidden::make('id_criador')
                     ->default(auth()->id()),
