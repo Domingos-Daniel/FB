@@ -4,6 +4,7 @@ namespace App\Filament\Clusters\Programas\Resources;
 
 use App\Filament\Clusters\Programas;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\Pages;
+use App\Filament\Clusters\Programas\Resources\SubprogramaResource\Widgets\SubprogramaOverview;
 use App\Models\gasto;
 use App\Models\Programa;
 use App\Models\Subprograma;
@@ -351,6 +352,13 @@ class SubprogramaResource extends Resource
     {
         return [
             //
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            SubprogramaOverview::class,
         ];
     }
 

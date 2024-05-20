@@ -3,12 +3,14 @@
 namespace App\Filament\Clusters\Programas\Resources\SubprogramaResource\Pages;
 
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource;
+use App\Filament\Clusters\Programas\Resources\SubprogramaResource\Widgets\SubprogramaOverview;
 use App\Models\gasto;
 use App\Models\OrcamentoPrograma;
 use App\Models\Subprograma;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Str;
 
 class EditSubprograma extends EditRecord
 {
@@ -29,6 +31,20 @@ class EditSubprograma extends EditRecord
         }
 
         return [];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            SubprogramaOverview::class,
+        ];
+    }
+
+    public function updated($name)
+    {
+        if (Str::of($name)->contains(['mountedTableAction', 'mountedTableBulkAction'])) {
+            $this->emit('updateSubprogramaOverview');
+        }
     }
 
     protected function afterSave(): void

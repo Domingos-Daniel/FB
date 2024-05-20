@@ -22,7 +22,7 @@ class OrcamentoOverview extends BaseWidget
 
         $orcamento_sum = DB::table('orcamentos')
             ->selectRaw('
-         SUM(valor) as total
+         SUM(valor) as total 
      ')
             ->join('workflow_orcamento', 'orcamentos.id', '=', 'workflow_orcamento.orcamento_id')
             ->first();
