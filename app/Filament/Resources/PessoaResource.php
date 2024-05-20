@@ -6,6 +6,7 @@ use App\Filament\Exports\PessoaExporter;
 use App\Filament\Resources\PessoaResource\Pages;
 use App\Filament\Resources\PessoaResource\RelationManagers;
 use App\Filament\Resources\PessoaResource\RelationManagers\SubprogramaPessoaRelationManager;
+use App\Filament\Resources\PessoaResource\Widgets\PessoaOverview;
 use App\Filament\Resources\SubprogramaPessoaResource\RelationManagers\PessoaRelationManager;
 use App\Models\Pessoa;
 use Filament\Forms;
@@ -297,6 +298,13 @@ class PessoaResource extends Resource
             'create' => Pages\CreatePessoa::route('/create'),
             'view' => Pages\ViewPessoa::route('/{record}'),
             'edit' => Pages\EditPessoa::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            PessoaOverview::class,
         ];
     }
 

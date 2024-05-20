@@ -5,6 +5,7 @@ namespace App\Filament\Clusters\Programas\Resources;
 use App\Filament\Clusters\Programas;
 use App\Filament\Clusters\Programas\Resources\OrcamentoResource\Pages;
 use App\Filament\Clusters\Programas\Resources\OrcamentoResource\RelationManagers;
+use App\Filament\Clusters\Programas\Resources\OrcamentoResource\Widgets\OrcamentoOverview;
 use App\Models\Orcamento;
 use App\Models\Programa;
 use App\Models\WorkflowOrcamento;
@@ -160,6 +161,14 @@ class OrcamentoResource extends Resource
             //
         ];
     }
+
+    public static function getWidgets(): array
+    {
+        return [
+            OrcamentoOverview::class,
+        ];
+    }
+
 
     public static function getPages(): array
     {

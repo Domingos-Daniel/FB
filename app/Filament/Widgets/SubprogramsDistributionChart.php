@@ -94,6 +94,10 @@ class SubprogramsDistributionChart extends ChartWidget
             'tooltip' => [
                 'enabled' => true,
             ],
+            'title' => [
+                'display' => true,
+                'text' => 'Distribuição de subprogramas',
+            ],
         ],
         'scales' => [
             'y' => [

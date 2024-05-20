@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\ProgramaResource\Pages;
 
 use App\Filament\Resources\ProgramaResource;
+use App\Filament\Resources\ProgramaResource\Widgets\ProgramaOverview;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Str;
 
 class ListProgramas extends ListRecords
 {
@@ -24,5 +26,19 @@ class ListProgramas extends ListRecords
         }
 
         return [];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            ProgramaOverview::class,
+        ];
+    }
+
+    public function updated($name)
+    {
+        if (Str::of($name)->contains(['mountedTableAction', 'mountedTableBulkAction'])) {
+            $this->emit('updateProgramaOverview');
+        }
     }
 }

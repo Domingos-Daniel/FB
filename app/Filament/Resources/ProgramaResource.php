@@ -5,8 +5,10 @@ namespace App\Filament\Resources;
 use App\Filament\Clusters\Programas;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers\ProgramaRelationManager;
 use App\Filament\Exports\ProgramaExporter;
+use App\Filament\Resources\PessoaResource\Widgets\ProgramaOverview;
 use App\Filament\Resources\ProgramaResource\Pages;
 use App\Filament\Resources\ProgramaResource\RelationManagers\SubprogramaRelationManager;
+use App\Filament\Resources\ProgramaResource\Widgets\ProgramaOverview as WidgetsProgramaOverview;
 use App\Models\gasto;
 use App\Models\Orcamento;
 use App\Models\OrcamentoPrograma;
@@ -378,6 +380,13 @@ class ProgramaResource extends Resource
     {
         return [
             SubprogramaRelationManager::class,
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            WidgetsProgramaOverview::class,
         ];
     }
 

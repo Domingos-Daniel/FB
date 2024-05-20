@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
+use App\Filament\Resources\UserResource\Widgets\UserOverview;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Forms;
@@ -53,7 +54,7 @@ class UserResource extends Resource
                     ->email()
                     ->required(fn (string $context): bool => $context === 'create')
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255), 
+                    ->maxLength(255),
                 //Forms\Components\DateTimePicker::make('email_verified_at'),
                 Forms\Components\TextInput::make('password')
                     ->password()
@@ -69,7 +70,7 @@ class UserResource extends Resource
                     ->multiple()
                     ->searchable()
                     ->required(fn (string $context): bool => $context === 'create')
-                    ->preload(), 
+                    ->preload(),
 
             ]);
     }
@@ -130,6 +131,13 @@ class UserResource extends Resource
         ];
     }
 
+    public static function getWidgets(): array
+    {
+        return [
+            UserOverview::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
@@ -138,6 +146,7 @@ class UserResource extends Resource
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
+
     public static function getEloquentQuery(): Builder
     {
         return auth()->user()->hasRole('Admin')
