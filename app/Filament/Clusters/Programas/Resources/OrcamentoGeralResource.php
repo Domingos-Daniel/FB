@@ -19,9 +19,18 @@ class OrcamentoGeralResource extends Resource
 {
     protected static ?string $model = OrcamentoGeral::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     protected static ?string $navigationGroup = 'Gestão Orçamental';
+
+    
+    protected static ?string $modelLabel = 'Orçamento Anual';
+    protected static ?string $pluralModelLabel = 'Orçamentos Anuais';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count(); 
+    }
 
     protected static ?string $cluster = Programas::class;
 
@@ -39,7 +48,7 @@ class OrcamentoGeralResource extends Resource
                     ->prefixIcon('heroicon-o-currency-dollar')
                     ->prefixIconColor('success')
                     ->label('Valor Orçamento Geral')
-                    ->numeric(),
+                    ->numeric(), 
                 Forms\Components\RichEditor::make('descricao')
                     ->required()
                     ->columnSpanFull()

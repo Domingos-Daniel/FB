@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Infolists\Components;
 use Filament\Support\Enums\FontWeight;
 use Filament\Infolists\Infolist;
+use Filament\Forms\Components\Wizard;
 
 class PessoaResource extends Resource
 {
@@ -44,74 +45,107 @@ class PessoaResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nome')
-                ->label('Nome do Beneficiario')
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('bi')
-                    ->label('BI / Nº de Identificação Fiscal')
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(14)
-                    ->minLength(14),
-                Forms\Components\DatePicker::make('data_nascimento')
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->date()
-                    ->label('Data de Nascimento / Data de Criação')
-                    ->closeOnDateSelection()
-                    ->minDate(now()->subYears(80))
-                    ->maxDate(now()->subYears(20)),
-                Forms\Components\Radio::make('genero')
-                    ->label('Género')
-                    ->options([
-                        'Masculino' => 'Masculino',
-                        'Feminino' => 'Feminino',
-                        'Outro' => 'Outro',
-                    ])
-                    ->required(fn (string $context): bool => $context === 'create'),
-                Forms\Components\Select::make('grau_academico')
-                    ->options([
-                        'Ensino Geral' => 'Ensino Geral',
-                        'Ensino Medio' => 'Ensino Medio',
-                        'Bacharel' => 'Bacharel',
-                        'Licenciado' => 'Licenciado',
-                        'Msc' => 'Msc',
-                        'PHD' => 'PHD',
-                        'Outro' => 'Outro',
-                    ])
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->searchable()
-                    ->preload(),
-                Forms\Components\Select::make('tipo_pessoa')->options([
-                    'Individual' => 'Individual',
-                    'Institucional' => 'Institucional',
-                    'Empresa' => 'Empresa',
-                ])
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->searchable()
-                    ->label('Tipo de Beneficiario')
-                    ->columnSpanFull()
-                    ->preload(),
+                Wizard::make([
+                    Wizard\Step::make('Tipo de Beneficiario')
+                        ->schema([
+                            Forms\Components\Select::make('tipo_pessoa')
+                                ->options([
+                                    'Individual' => 'Individual',
+                                    'Institucional' => 'Institucional',
+                                    'Empresa' => 'Empresa',
+                                ])
+                                ->required(fn (string $context): bool => $context === 'create')
+                                ->searchable()
+                                ->label('Tipo de Beneficiario')
+                                ->columnSpanFull()
+                                ->preload(),
+                        ]),
 
-                Forms\Components\Textarea::make('morada')
-                    ->label('Morada / Endereço')
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(100)
-                    ->rows(5)
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('telefone')
-                    ->label('Telefone / Celular')
-                    ->tel()
-                    ->telRegex('/^\d{9}$/')
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->numeric()
-                    ->maxLength(9) 
-                    ->minLength(9),
-                Forms\Components\Hidden::make('id_criador')
-                    ->default(auth()->id()),
+                    Wizard\Step::make('Informações Pessoais')
+                        ->schema([
+                            Forms\Components\Grid::make(2)
+                                ->schema([
+                                    Forms\Components\TextInput::make('nome')
+                                        ->label('Nome do Beneficiario')
+                                        ->required(fn (string $context): bool => $context === 'create')
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('email')
+                                        ->email()
+                                        ->required(fn (string $context): bool => $context === 'create')
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('bi')
+                                        ->label('BI / Nº de Identificação Fiscal')
+                                        ->required(fn (string $context): bool => $context === 'create')
+                                        ->maxLength(14)
+                                        ->minLength(14)
+                                        ->maxValue(14)
+                                        ->helperText('Nó de Identificação Fiscal (BI) ou Código de Identificação do Contribuinte (C.I.)'),
+                                    Forms\Components\DatePicker::make('data_nascimento')
+                                        ->required(fn (string $context): bool => $context === 'create')
+                                        ->date()
+                                        ->label('Data de Nascimento / Data de Criação')
+                                        ->closeOnDateSelection()
+                                        ->minDate(now()->subYears(80))
+                                        ->maxDate(now()->subYears(20)),
+                                    Forms\Components\Radio::make('genero')
+                                        ->label('Género')
+                                        ->options([
+                                            'Masculino' => 'Masculino',
+                                            'Feminino' => 'Feminino',
+                                            'Outro' => 'Outro',
+                                        ])
+                                        ->required(fn (string $context): bool => $context === 'create')
+                                ]),
+                        ]),
+
+
+                    Wizard\Step::make('Informações Educacionais')
+                        ->schema([
+                            Forms\Components\Select::make('grau_academico')
+                                ->options([
+                                    'Ensino Geral' => 'Ensino Geral',
+                                    'Ensino Medio' => 'Ensino Medio',
+                                    'Bacharel' => 'Bacharel',
+                                    'Licenciado' => 'Licenciado',
+                                    'Msc' => 'Msc',
+                                    'PHD' => 'PHD',
+                                    'Outro' => 'Outro',
+                                ])
+                                ->label('Grau de Escolaridade')
+                                ->columnSpanFull()
+                                ->required(fn (string $context): bool => $context === 'create')
+                                ->searchable()
+                                ->preload(),
+                        ]),
+
+                    Wizard\Step::make('Contato e Endereço')
+                        ->schema([
+                            Forms\Components\Textarea::make('morada')
+                                ->label('Morada / Endereço')
+                                ->required(fn (string $context): bool => $context === 'create')
+                                ->maxLength(100)
+                                ->rows(3)
+                                ->columnSpanFull(),
+                            Forms\Components\TextInput::make('telefone')
+                                ->label('Telefone / Celular')
+                                ->tel()
+                                ->required(fn (string $context): bool => $context === 'create')
+                                ->numeric()
+                                ->maxLength(9)
+                                ->minLength(9)
+                                ,
+                        ]),
+
+                    Wizard\Step::make('Observações e Finalizar')
+                        ->schema([
+                            Forms\Components\RichEditor::make('observacoes')
+                                ->label('Observações / Comentários sobre o Beneficiário')
+                                ->columnSpanFull(),
+                            Forms\Components\Hidden::make('id_criador')
+                                ->default(auth()->id()),
+                        ]),
+                ])->columnSpanFull()
+                    ->columns(5),
             ]);
     }
 

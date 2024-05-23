@@ -22,6 +22,7 @@ class Pessoa extends Model
         'grau_academico',
         'morada',
         'telefone',
+        'observacoes',
         'id_criador', 
     ];
 
