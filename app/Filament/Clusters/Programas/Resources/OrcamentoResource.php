@@ -7,10 +7,14 @@ use App\Filament\Clusters\Programas\Resources\OrcamentoResource\Pages;
 use App\Filament\Clusters\Programas\Resources\OrcamentoResource\RelationManagers;
 use App\Filament\Clusters\Programas\Resources\OrcamentoResource\Widgets\OrcamentoOverview;
 use App\Models\Orcamento;
+use App\Models\OrcamentoGeral;
 use App\Models\Programa;
 use App\Models\WorkflowOrcamento;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
@@ -54,27 +58,85 @@ class OrcamentoResource extends Resource
     public static function form(Form $form): Form
     {
         $programas = Programa::pluck('nome', 'id')->toArray();
+        $valor_orcamento_geral = OrcamentoGeral::whereYear('created_at', '>=', now()->format('Y'))
+                                                ->pluck('valor_total')
+                                                ->first();
+        $isDisabled = false;
+        if($valor_orcamento_geral == null){
+            $isDisabled = true;
+        }
 
         return $form
             ->schema([ 
                  // Forms\Components\TextInput::make('id_programa')
                 //     ->required()
                 //     ->numeric(),
-                // Forms\Components\Select::make('programa_id')
-                //     ->options($programas)
-                //     ->label("Selecione o Programa Social")
-                //     ->searchable()
-                //     ->required(fn (string $context): bool => $context === 'create'),
+                Forms\Components\TextInput::make('Valor Actual Orçamento Geral')
+                    ->default(function () {
+                        $valorGeral = OrcamentoGeral::whereYear('created_at', '>=', now()->format('Y'))
+                            ->pluck('valor_total')
+                            ->first();
+                        $valorOrcamento = Orcamento::whereYear('created_at', now()->format('Y'))
+                            ->sum('valor');
+
+                        $orcamento_atual = $valorGeral - $valorOrcamento;
+                        $formated = number_format($orcamento_atual, 2, ',', '.');
+                        return $formated;
+                    })
+                    ->prefixIcon('heroicon-o-currency-dollar')
+                    ->prefixIconColor('success')
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->disabled(),
                 Forms\Components\TextInput::make('valor')
                     ->label("Valor do Orçamento")
                     ->unique(ignoreRecord: true)
                     ->required()
-                    ->numeric(),
+                    ->disabled($isDisabled)
+                    ->numeric()
+                    ->prefixIcon('heroicon-o-currency-dollar')
+                    ->prefixIconColor('success')
+                    ->rules([
+                        fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                            // Obtém o valor inserido no campo 'valor'
+                            $valorInserido = (float) $value;
+                            // Buscar o id_orcamento na tabela orcamentoprograma
+                            $valor_orcamento_geral = OrcamentoGeral::whereYear('created_at', '>=', now()->format('Y'))
+                                                ->pluck('valor_total')
+                                                ->first();
+
+                            // Verifica se o valor inserido é maior que o valor do orcamento geral
+                            if ($valorInserido >= $valor_orcamento_geral) {
+                                Notification::make()
+                                    ->danger()
+                                    ->title('Erro no Formulário')
+                                    ->body('O valor do orçamento não pode ser maior, nem igual ao valor do orçamento geral.')
+                                    ->send();
+                                $fail("O valor inserido para o orçamento é maior, ou igual ao valor do orçamento geral.");
+                            }else if($valorInserido < 0){
+                                Notification::make()
+                                    ->danger()
+                                    ->title('Erro no Formulário')
+                                    ->body('O valor do orçamento não pode ser negativo.')
+                                    ->send();
+                                $fail("O valor inserido para o orçamento é negativo.");
+                            }else if($valorInserido == 0){
+                                Notification::make()
+                                    ->danger()
+                                    ->title('Erro no Formulário')
+                                    ->body('O valor do orçamento não pode ser zero.')
+                                    ->send();
+                                $fail("O valor inserido para o orçamento é zero.");
+                            } 
+                        },
+                    ]),
                 Forms\Components\RichEditor::make('descricao')
                     ->required()
+                    ->disabled($isDisabled)
                     ->unique(ignoreRecord: true)
-                    ->minLength(20)
+                    ->columnSpanFull()
+                    ->minLength(5)
                     ->maxLength(1024) 
+                    ->disabled($isDisabled)
                     ->label('Descrição do Orçamento'),
                 Forms\Components\Hidden::make('id_criador')
                     ->default(auth()->id()),

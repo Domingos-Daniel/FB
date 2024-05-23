@@ -31,4 +31,6 @@ class CreateUser extends CreateRecord
             ->sendToDatabase(\auth()->user());
     }
 
+    
+
 }

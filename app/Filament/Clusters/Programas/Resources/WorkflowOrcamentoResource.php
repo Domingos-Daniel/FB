@@ -5,6 +5,7 @@ namespace App\Filament\Clusters\Programas\Resources;
 use App\Filament\Clusters\Programas;
 use App\Filament\Clusters\Programas\Resources\WorkflowOrcamentoResource\Pages;
 use App\Filament\Clusters\Programas\Resources\WorkflowOrcamentoResource\RelationManagers;
+use App\Models\Aprovado;
 use App\Models\WorkflowOrcamento;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -15,6 +16,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\Orcamento;
+use App\Models\PassosWorkflow;
 use App\Models\User;
 use Filament\Actions\Modal\Actions\Action;
 use Filament\Forms\Components\RichEditor;
@@ -45,17 +47,17 @@ use Illuminate\Support\Str;
 
 class WorkflowOrcamentoResource extends Resource
 {
-    protected static ?string $model = WorkflowOrcamento::class; 
+    protected static ?string $model = WorkflowOrcamento::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
     protected static ?string $navigationGroup = 'Gestão Orçamental';
     protected static ?string $modelLabel = 'WorkFlow';
-    protected static ?string $pluralModelLabel = 'WorkFlows'; 
-    
+    protected static ?string $pluralModelLabel = 'WorkFlows';
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Programas::class;
-
+    
     public static function form(Form $form): Form
     {
         return $form
@@ -90,7 +92,7 @@ class WorkflowOrcamentoResource extends Resource
                     ->html()
                     ->badge()
                     ->color('info')
-                    ->sortable(),
+                    ->sortable(), 
                 Tables\Columns\TextColumn::make('orcamento.valor')
                     ->label('Valor do Orcamento')
                     ->numeric()
@@ -230,6 +232,16 @@ class WorkflowOrcamentoResource extends Resource
                         }
 
                         $record->save();
+
+                        // // Find the PassosWorkflow record based on the prox_passo value
+                        // $passoWorkflow = PassosWorkflow::where('nome', $record->prox_passo)->first();
+                        // // Salva na tabela aprovados
+                        // $aprovado = new Aprovado();
+                        // $aprovado->workflow_orcamento_id = $record->id;
+                        // $aprovado->passo_workflow_id = $passoWorkflow;// set the passo_workflow_id value here
+                        // $aprovado->status = $data['status'];
+                        // $aprovado->usuario_id = auth()->id(); // or get the user ID from the $data array if available
+                        // $aprovado->save();
                     })
 
             ])
@@ -432,6 +444,17 @@ class WorkflowOrcamentoResource extends Resource
                                     $id = $record->orcamento_id;
                                     $status = $record->status;
                                     $prox = $record->prox_passo;
+
+                                    // // Find the PassosWorkflow record based on the prox_passo value
+                                    // $passoWorkflow = PassosWorkflow::where('nome', $record->prox_passo)->first();
+                                    // // Salva na tabela aprovados
+                                    // $aprovado = new Aprovado();
+                                    // $aprovado->workflow_orcamento_id = $record->id;
+                                    // $aprovado->passo_workflow_id = $passoWorkflow;// set the passo_workflow_id value here
+                                    // $aprovado->status = $status;
+                                    // $aprovado->usuario_id = auth()->id(); // or get the user ID from the $data array if available
+                                    // $aprovado->save();
+                                    
                                     // Notificação de sucesso para o usuário atual
                                     Notification::make()
                                         ->title('Notificação Enviada')
@@ -526,7 +549,7 @@ class WorkflowOrcamentoResource extends Resource
                                         ->schema([
                                             MarkdownEditor::make('motivo_rejeicao')
                                                 ->label('Motivo da Rejeição')
-                                                ->minLength(20)
+                                                ->minLength(5)
                                                 ->required(),
                                         ]),
                                     Step::make('Confirmação de Ação')
@@ -546,8 +569,11 @@ class WorkflowOrcamentoResource extends Resource
                                 ])
                                 ->action(function (array $data, WorkflowOrcamento $record): void {
                                     // Validação do campo de confirmação
-                                    if (strtolower($data['confirmation'] ?? '') !== 'confirmar') {
+                                    if (strtolower($data['confirmation'] ?? '') !== 'CONFIRMAR') {
                                         throw ValidationException::withMessages(['confirmation' => 'Digite "CONFIRMAR" para confirmar a ação']);
+                                    }
+                                    if ($record->status === 'rejeitado') {
+                                        $record->prox_passo = 'Finalizado';
                                     }
                                     if ($record->num_aprovacoes_necessarias === 1) {
                                         $record->prox_passo = 'Finalizado';
@@ -569,6 +595,16 @@ class WorkflowOrcamentoResource extends Resource
                                     $record->motivo_rejeicao = $data['motivo_rejeicao'] ?? null;
 
                                     $record->save();
+
+                                    // // Find the PassosWorkflow record based on the prox_passo value
+                                    // $passoWorkflow = PassosWorkflow::where('nome', $record->prox_passo)->first();
+                                    // // Salva na tabela aprovados
+                                    // $aprovado = new Aprovado();
+                                    // $aprovado->workflow_orcamento_id = $record->id;
+                                    // $aprovado->passo_workflow_id = $passoWorkflow;// set the passo_workflow_id value here
+                                    // $aprovado->status = $status;
+                                    // $aprovado->usuario_id = auth()->id(); // or get the user ID from the $data array if available
+                                    // $aprovado->save();
 
                                     // Notificação de sucesso para o usuário atual
                                     Notification::make()

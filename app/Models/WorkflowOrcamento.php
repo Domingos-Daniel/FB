@@ -36,7 +36,6 @@ class WorkflowOrcamento extends Model
         return $this->belongsTo(User::class, 'processado_por');
     }
 
-
     public function approve()
     {
         // Verifica se o estado atual já é aprovado

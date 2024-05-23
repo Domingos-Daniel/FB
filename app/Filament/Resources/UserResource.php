@@ -62,17 +62,17 @@ class UserResource extends Resource
                     ->dehydrated(fn ($state) => filled($state))
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255)->label("Senha"),
-
                 Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name', function (Builder $query) {
                         return auth()->user()->hasRole('Admin') ? $query : $query->where('name', '!=', 'Admin');
                     })
                     ->multiple()
-                    ->searchable()
-                    ->required(fn (string $context): bool => $context === 'create')
+                    ->required()
                     ->preload(),
+                Forms\Components\Hidden::make('model_type')
+                ->default(\App\Models\User::class),
 
-            ]);
+            ]); 
     }
 
     public static function table(Table $table): Table
