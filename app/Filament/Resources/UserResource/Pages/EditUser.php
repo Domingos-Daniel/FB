@@ -30,7 +30,7 @@ class EditUser extends EditRecord
                 B::make('view')
                     ->label('Visualizar')
                     ->button()
-                    ->url(route('filament.admin.resources.users.edit', $this->record->id)),
+                    ->url(route('filament.admin.resources.users.index')),
             ])
             ->sendToDatabase(\auth()->user());
     }

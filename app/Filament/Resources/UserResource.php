@@ -18,6 +18,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
+use App\Filament\Exports\ProductExporter;
+use App\Filament\Exports\UserExporter;
+use Filament\Tables\Actions\ExportBulkAction;
 
 class UserResource extends Resource
 {
@@ -58,14 +61,16 @@ class UserResource extends Resource
                     ->maxLength(255)
                     ->label("Senha"),
                 Forms\Components\Select::make('roles')
+                    ->label("Função")
+                    ->hint("Selecione uma ou mais funções para o utilizador")
                     ->relationship('roles', 'name', function (Builder $query) {
                         return auth()->user()->hasRole('Admin') ? $query : $query->where('name', '!=', 'Admin');
                     })
                     ->multiple()
+                    ->native(false)
+                    ->searchable()
                     ->required()
                     ->preload(),
-                Forms\Components\Hidden::make('model_type')
-                    ->default(User::class),
             ]);
     }
 
@@ -77,6 +82,7 @@ class UserResource extends Resource
                     ->searchable()
                     ->label("Nome Completo"),
                 Tables\Columns\TextColumn::make('email')
+                    ->label("Email")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('roles.name')
                     ->label('Função')
@@ -86,18 +92,20 @@ class UserResource extends Resource
                     ->sortable()
                     ->label("Data Validado"),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label("Data Criado")
                     ->dateTime(format: "d/m/Y H:i:s")
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label("Data Atualizado")
                     ->dateTime(format: "d/m/Y H:i:s")
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('roles.name')
+                SelectFilter::make('roles')
                     ->relationship('roles', 'name')
-                    ->options(fn () => Role::pluck('name', 'id')->toArray())
+                    ->options(Role::all()->pluck('name', 'id'))
                     ->label('Função')
                     ->multiple()
                     ->placeholder('Pesquisar funções...'),
@@ -109,6 +117,11 @@ class UserResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    ExportBulkAction::make()
+                        ->label('Exportar Dado(s)')
+                        ->exporter(UserExporter::class)
+                        ->columnMapping(true)
+
                 ]),
             ]);
     }

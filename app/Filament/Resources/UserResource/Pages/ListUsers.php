@@ -26,10 +26,10 @@ class ListUsers extends ListRecords
         ];
     }
 
-    public function updated($name)
-    {
-        if (Str::of($name)->contains(['mountedTableAction', 'mountedTableBulkAction'])) {
-            $this->emit('updateUserOverview');
-        }
-    }
+    // public function updated($name)
+    // {
+    //     if (Str::of($name)->contains(['mountedTableAction', 'mountedTableBulkAction'])) {
+    //         $this->emit('updateUserOverview');
+    //     }
+    // }
 }
