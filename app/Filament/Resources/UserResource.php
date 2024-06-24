@@ -15,22 +15,16 @@ use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Request;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
-
-use function PHPUnit\Framework\callback;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $modelLabel = 'Utilizador';
     protected static ?string $pluralModelLabel = 'Gestão Utilizadores';
-
     protected static ?string $navigationGroup = 'Configurações';
 
     public static function getNavigationBadge(): ?string
@@ -40,7 +34,7 @@ class UserResource extends Resource
 
     public function getModelTypeForPermission(): string
     {
-        return 'App\Models\User'; // Altere isso para o caminho correto do seu modelo de usuário
+        return 'App\Models\User';
     }
 
     public static function form(Form $form): Form
@@ -49,19 +43,20 @@ class UserResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(255)->label("Nome Completo"),
+                    ->maxLength(255)
+                    ->label("Nome Completo"),
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required(fn (string $context): bool => $context === 'create')
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
-                //Forms\Components\DateTimePicker::make('email_verified_at'),
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                     ->dehydrated(fn ($state) => filled($state))
                     ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(255)->label("Senha"),
+                    ->maxLength(255)
+                    ->label("Senha"),
                 Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name', function (Builder $query) {
                         return auth()->user()->hasRole('Admin') ? $query : $query->where('name', '!=', 'Admin');
@@ -70,18 +65,17 @@ class UserResource extends Resource
                     ->required()
                     ->preload(),
                 Forms\Components\Hidden::make('model_type')
-                ->default(\App\Models\User::class),
-
-            ]); 
+                    ->default(User::class),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
-        $user = Auth::user();
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable()->label("Nome Completo"),
+                    ->searchable()
+                    ->label("Nome Completo"),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('roles.name')
@@ -89,7 +83,8 @@ class UserResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('email_verified_at')
                     ->dateTime(format: "d/m/Y H:i:s")
-                    ->sortable()->label("Data Validado"),
+                    ->sortable()
+                    ->label("Data Validado"),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime(format: "d/m/Y H:i:s")
                     ->sortable()
@@ -100,18 +95,13 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('roles.name')
+                SelectFilter::make('roles.name')
                     ->relationship('roles', 'name')
-                    ->options(function () {
-                        return Role::pluck('name', 'id')->toArray();
-                    })
+                    ->options(fn () => Role::pluck('name', 'id')->toArray())
                     ->label('Função')
-                    ->multiple() // Habilitar multi-seleção
-                    ->placeholder('Pesquisar funções...'), // Texto de placeholder na caixa de texto
-
-
+                    ->multiple()
+                    ->placeholder('Pesquisar funções...'),
             ])
-
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
@@ -126,7 +116,6 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
             ActivitylogRelationManager::class,
         ];
     }

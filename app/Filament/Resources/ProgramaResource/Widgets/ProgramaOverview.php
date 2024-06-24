@@ -32,11 +32,15 @@ class ProgramaOverview extends BaseWidget
         ')
             ->first();
 
-        $orcamento_sum = DB::table('orcamentos')
+            $orcamento_sum = DB::table('orcamentos')
             ->selectRaw('
-         SUM(valor) as total
-     ')
-            ->join('workflow_orcamento', 'orcamentos.id', '=', 'workflow_orcamento.orcamento_id')
+            SUM(valor) as total 
+        ')
+            ->join('workflow_orcamento', function ($join) {
+                $join->on('orcamentos.id', '=', 'workflow_orcamento.orcamento_id')
+                    ->where('workflow_orcamento.status', '=', 'aprovado')
+                    ->where('workflow_orcamento.prox_passo', '=', 'Finalizado');
+            })
             ->first();
         $orcamentosFormatados = number_format($orcamento_sum->total, 2, ',', '.');
        // $orcamento_sum_float = floatval($orcamento_sum->total->value);

@@ -57,7 +57,7 @@ class WorkflowOrcamentoResource extends Resource
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Programas::class;
-    
+
     public static function form(Form $form): Form
     {
         return $form
@@ -92,7 +92,7 @@ class WorkflowOrcamentoResource extends Resource
                     ->html()
                     ->badge()
                     ->color('info')
-                    ->sortable(), 
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('orcamento.valor')
                     ->label('Valor do Orcamento')
                     ->numeric()
@@ -286,7 +286,7 @@ class WorkflowOrcamentoResource extends Resource
                                     if ($record->prox_passo === 'Aprovação CA Curadores') {
                                         return '1ª Etapa: ' . $record->status;
                                     } else if ($record->prox_passo === 'Finalizado') {
-                                        return '2ª Etapa: ' . $record->status;
+                                        return '1ª Etapa: ' . $record->status.'&nbsp; &nbsp; 2ª Etapa: ' . $record->status;
                                     } else {
                                         return '<b>Pendente</b> Nenhum do aprovadores processou';
                                     }
@@ -358,7 +358,22 @@ class WorkflowOrcamentoResource extends Resource
                             }),
                         Actions::make([
                             InfolistAction::make('status')
-                                ->label(fn ($record) => $record->status === 'pendente' ? 'Aprovar Orçamento' : 'Orçamento Processado')
+                                ->label(
+                                    function ($record) {
+                                        if ($record->status === 'pendente') {
+                                            return 'Aprovar Orçamento';
+                                        } else {
+
+                                            if ($record->num_aprovacoes_necessarias === 1 && $record->prox_passo === 'Finalizado') {
+                                                return 'Orçamento Processado';
+                                            }
+                                            // If two approvals are needed, check the user role
+                                            else if ($record->num_aprovacoes_necessarias === 2 && $record->prox_passo === 'Finalizado') {
+                                                return 'Orçamento Processado';
+                                            }
+                                        }
+                                    }
+                                )
                                 ->icon('heroicon-o-check-circle')
                                 ->disabled(function ($record) {
                                     $user = auth()->user();
@@ -454,7 +469,7 @@ class WorkflowOrcamentoResource extends Resource
                                     // $aprovado->status = $status;
                                     // $aprovado->usuario_id = auth()->id(); // or get the user ID from the $data array if available
                                     // $aprovado->save();
-                                    
+
                                     // Notificação de sucesso para o usuário atual
                                     Notification::make()
                                         ->title('Notificação Enviada')
@@ -572,19 +587,19 @@ class WorkflowOrcamentoResource extends Resource
                                     if (strtolower($data['confirmation'] ?? '') !== 'CONFIRMAR') {
                                         throw ValidationException::withMessages(['confirmation' => 'Digite "CONFIRMAR" para confirmar a ação']);
                                     }
-                                    if ($record->status === 'rejeitado') {
-                                        $record->prox_passo = 'Finalizado';
-                                    }
-                                    if ($record->num_aprovacoes_necessarias === 1) {
-                                        $record->prox_passo = 'Finalizado';
-                                    } elseif ($record->num_aprovacoes_necessarias === 2) {
-                                        if ($record->prox_passo === 'Aprovação Diretor Geral') {
+                                    // if ($record->status === 'rejeitado') {
+                                    //     $record->prox_passo = 'Finalizado';
+                                    // }
+                                    // if ($record->num_aprovacoes_necessarias === 1) {
+                                    //     $record->prox_passo = 'Finalizado';
+                                    // } elseif ($record->num_aprovacoes_necessarias === 2) {
+                                    //     if ($record->prox_passo === 'Aprovação Diretor Geral') {
 
-                                            $record->prox_passo = 'Aprovação CA Curadores';
-                                        } else {
-                                            $record->prox_passo = 'Finalizado';
-                                        }
-                                    }
+                                    //         $record->prox_passo = 'Aprovação CA Curadores';
+                                    //     } else {
+                                    //         $record->prox_passo = 'Finalizado';
+                                    //     }
+                                    // }
                                     $id = $record->orcamento_id;
                                     $status = $record->status;
                                     $prox = $record->prox_passo;

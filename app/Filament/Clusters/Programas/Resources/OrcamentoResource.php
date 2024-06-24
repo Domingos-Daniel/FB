@@ -76,8 +76,11 @@ class OrcamentoResource extends Resource
                         $valorGeral = OrcamentoGeral::whereYear('created_at', '>=', now()->format('Y'))
                             ->pluck('valor_total')
                             ->first();
-                        $valorOrcamento = Orcamento::whereYear('created_at', now()->format('Y'))
-                            ->sum('valor');
+                        $valorOrcamento = Orcamento::join('workflow_orcamento', 'orcamentos.id', '=', 'workflow_orcamento.orcamento_id')
+                            ->whereYear('orcamentos.created_at', now()->format('Y'))
+                            ->where('workflow_orcamento.status', 'aprovado')
+                            ->where('workflow_orcamento.prox_passo', 'Finalizado')
+                            ->sum('orcamentos.valor');
 
                         $orcamento_atual = $valorGeral - $valorOrcamento;
                         $formated = number_format($orcamento_atual, 2, ',', '.');

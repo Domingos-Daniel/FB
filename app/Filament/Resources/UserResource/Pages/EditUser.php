@@ -10,12 +10,13 @@ use Filament\Notifications\Notification;
 
 class EditUser extends EditRecord
 {
-    protected static string $resource = UserResource::class;
+    protected static  string $resource = UserResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
             Actions\DeleteAction::make(),
+            Actions\ViewAction::make(),
         ];
     }
 
