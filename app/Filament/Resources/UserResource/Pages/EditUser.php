@@ -20,6 +20,8 @@ class EditUser extends EditRecord
         ];
     }
 
+ 
+
     protected function getSavedNotification(): ?Notification
     {
         return Notification::make()
@@ -39,6 +41,4 @@ class EditUser extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
-
-    
 }

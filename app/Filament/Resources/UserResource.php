@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\UsersExport;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Filament\Resources\UserResource\Widgets\UserOverview;
@@ -20,7 +21,11 @@ use Illuminate\Support\Facades\Hash;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use App\Filament\Exports\ProductExporter;
 use App\Filament\Exports\UserExporter;
+use App\Filament\Exports\UsersExporter;
+use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Tables\Actions\ExportBulkAction;
+use Maatwebsite\Excel\Facades\Excel;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction as ExcelExportBulkAction;
 
 class UserResource extends Resource
 {
@@ -83,9 +88,18 @@ class UserResource extends Resource
                     ->label("Nome Completo"),
                 Tables\Columns\TextColumn::make('email')
                     ->label("Email")
+                    ->badge()
+                    ->color('success')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('roles.name')
                     ->label('Função')
+                    ->searchable()
+                    ->badge()
+                    ->color(
+                        fn ($record) => $record->roles->pluck('name')->first() === "Admin" ? "success" : "info",
+                        
+
+                    )
                     ->sortable(),
                 Tables\Columns\TextColumn::make('email_verified_at')
                     ->dateTime(format: "d/m/Y H:i:s")
@@ -113,14 +127,29 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                // Tables\Actions\Action::make('export')
+                // ->label('Exportar')
+                // ->action(function () {
+                //     return Excel::download(new UsersExporter, 'users.xlsx');
+                // }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    ExportBulkAction::make()
-                        ->label('Exportar Dado(s)')
-                        ->exporter(UserExporter::class)
-                        ->columnMapping(true)
+                    ExportBulkAction::make('exportcsv')
+                        ->label('Exportar CSV')
+                        ->formats([
+                            ExportFormat::Csv,
+                        ])
+                        ->exporter(UserExporter::class) 
+                        ->columnMapping(true),
+
+                    
+                    ExcelExportBulkAction::make('exportxlsx')
+                        ->label('Exportar Excel')
+                        ->icon('heroicon-o-document-text')
+                        ->color('primary'),
+                        
 
                 ]),
             ]);

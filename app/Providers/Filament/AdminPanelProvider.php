@@ -73,7 +73,6 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->plugins([
-                ApprovalPlugin::make(),
                 ActivitylogPlugin::make()
                 ->resource(AuditResource::class)
                 ->label('Log')
