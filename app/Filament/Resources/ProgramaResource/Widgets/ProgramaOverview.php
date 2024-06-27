@@ -18,7 +18,7 @@ class ProgramaOverview extends BaseWidget
             ->selectRaw(' 
             COUNT(*) as total 
         ')
-            ->first();
+            ->first(); 
 
         $subprogramas = DB::table('subprogramas')
             ->selectRaw(' 
@@ -29,7 +29,7 @@ class ProgramaOverview extends BaseWidget
         $orcamentos = DB::table('orcamentos')
             ->selectRaw(' 
             COUNT(*) as total
-        ')
+        ') 
             ->first();
 
             $orcamento_sum = DB::table('orcamentos')

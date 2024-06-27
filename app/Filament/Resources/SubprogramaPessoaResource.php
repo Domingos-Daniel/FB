@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\Programas\Resources\SubprogramaResource\Widgets\SubprogramaOverview;
 use App\Filament\Exports\SubprogramaPessoaExporter;
 use App\Filament\Resources\PessoaResource\RelationManagers\SubprogramaPessoaRelationManager;
 use App\Filament\Resources\SubprogramaPessoaResource\Pages;
 use App\Filament\Resources\SubprogramaPessoaResource\RelationManagers;
+use App\Filament\Resources\SubprogramaPessoaResource\Widgets\SubprogramaPessoaOverview;
 use App\Models\Orcamento;
 use App\Models\Pessoa;
 use App\Models\Programa;
@@ -256,6 +258,13 @@ class SubprogramaPessoaResource extends Resource
     {
         return [
             SubprogramaPessoaRelationManager::class,
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            SubprogramaPessoaOverview::class,
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\ProgramasExport;
 use App\Filament\Clusters\Programas;
 use App\Filament\Clusters\Programas\Resources\SubprogramaResource\RelationManagers\ProgramaRelationManager;
 use App\Filament\Exports\ProgramaExporter;
@@ -29,6 +30,9 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Infolists\Components;
 use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Actions\BulkAction;
+use Illuminate\Database\Eloquent\Collection;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProgramaResource extends Resource
 {
@@ -215,7 +219,13 @@ class ProgramaResource extends Resource
                     ExportBulkAction::make()
                         ->label('Exportar Dado(s)')
                         ->exporter(ProgramaExporter::class)
-                        ->columnMapping(true)
+                        ->columnMapping(true),
+                    BulkAction::make('export')
+                        ->label('Exportar to Excel')
+                        ->icon('heroicon-s-document-text')
+                        ->action(function (Collection $records) {
+                            return Excel::download(new ProgramasExport($records), 'programas.xlsx');
+                        })
                 ]),
             ]);
     }
