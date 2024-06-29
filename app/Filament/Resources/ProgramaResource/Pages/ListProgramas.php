@@ -20,18 +20,13 @@ class ListProgramas extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
-            
-            Action::make('export')
-                ->label('Exportar para Excel')
+            Action::make('exporter')
+                ->color('info')
+                ->icon('heroicon-o-document-text')
+                ->size('xl')
+                ->label('Exportar Planilha Modelo Geral')
                 ->action(function () {
-                    return Excel::download(new CombinedExport, 'combined_export.xlsx');
-                }),
-
-                Action::make('exporter')
-                ->color('danger')
-                ->label('Exportar para Excel2')
-                ->action(function () {
-                    return Excel::download(new ProjectsExport, 'programas.xlsx');
+                    return Excel::download(new ProjectsExport, 'Planilha modelos Fundação Brilhante de ' . date('d-m-Y H:i:s') . '.xlsx');
                 })
         ];
     }

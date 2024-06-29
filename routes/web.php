@@ -1,7 +1,9 @@
 <?php
 
+use App\Exports\ProjectsExport;
 use App\Http\Controllers\ExportController;
 use Illuminate\Support\Facades\Route;
+use Maatwebsite\Excel\Facades\Excel;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,4 +21,8 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::redirect('/', '/admin');
-Route::get('export-combined', [ExportController::class, 'export']);
+//Route::get('export-combined', [ExportController::class, 'export']);
+Route::get('export', [ExportController::class, 'exporter']);
+Route::get('/download-projects-excel', function () {
+    return Excel::download(new ProjectsExport, 'Planilha Modelo Fundação Brilhante de '.date('d-m-Y H:i:s').'.xlsx');
+})->name('download-projects-excel');

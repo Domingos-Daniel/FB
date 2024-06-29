@@ -34,7 +34,19 @@ class ProjectsExport implements FromCollection, WithMapping, WithStyles, ShouldA
         }
 
         // Format area_foco as a string if it's an array
-$areaFocoFormatted = is_array($programa->area_foco) ? implode(', ', $programa->area_foco) : $programa->area_foco;
+        $areaFocoFormatted = is_array($programa->area_foco) ? implode(', ', $programa->area_foco) : $programa->area_foco;
+        // Calculate the status based on the difference in dates
+        $status = 'Em andamento';
+        if ($programa->data_fim) {
+            $differenceInDays = $programa->data_fim->diffInDays(now());
+            if ($differenceInDays >= 90) {
+                $status = 'Finalizando';
+            } elseif ($differenceInDays >= 50) {
+                $status = 'Em andamento';
+            } else {
+                $status = 'Expirado';
+            }
+        }
 
         return [
             $programa->id,
@@ -45,11 +57,11 @@ $areaFocoFormatted = is_array($programa->area_foco) ? implode(', ', $programa->a
             'LOCALIDADE' => 'Luanda',
             $programa->created_at->format('d/m/Y'),
             $programa->updated_at->format('d/m/Y'),
-            $programa->situacao_atual,
+            $status,
             $orcamento ? $orcamento->valor : 0,
-            $orcamento ? $orcamento->valor_desembolsado : 0,
+            'desembolso' => '0.00',
             $orcamento ? $orcamento->execucao_fisica : 0,
-            $programa->data_fim ? $programa->data_fim->format('d/m/Y') : '',
+            $programa->created_at->addYear()->format('d/m/Y'), // Add one year to the created_at date
             $totalUserCount,
             'sector' => $areaFocoFormatted
         ];
@@ -123,6 +135,17 @@ $areaFocoFormatted = is_array($programa->area_foco) ? implode(', ', $programa->a
         foreach (range('A', 'O') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
+
+        // Rodape na linha da última célula
+        $footerStyle = [
+            'font' => ['name' => 'Cambria', 'size' => 10, 'color' => ['argb' => '808080']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
+        ];
+
+        $sheet->getStyle('A' . ($sheet->getHighestRow() + 6) . ':O' . ($sheet->getHighestRow() + 6))
+            ->applyFromArray($footerStyle);
+
+        $sheet->setCellValue('A' . ($sheet->getHighestRow() + 6), 'Processado pelo SIGP em ' . now()->format('d/m/Y H:i:s'));
 
         return [
             2 => ['font' => ['bold' => true, 'size' => 14]], // Título

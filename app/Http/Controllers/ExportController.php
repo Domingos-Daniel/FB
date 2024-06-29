@@ -9,13 +9,8 @@ use App\Exports\ProjectsExport;
 
 class ExportController extends Controller
 {
-    public function export()
-    {
-        return Excel::download(new CombinedExport, 'combined_export.xlsx');
-    }
-
     public function exporter()
     {
-        return Excel::download(new ProjectsExport, 'programas.xlsx');
+        return Excel::download(new ProjectsExport, 'Planilha Modelo Fundação Brilhante de '.date('d-m-Y H:i:s').'.xlsx');
     }
 }
