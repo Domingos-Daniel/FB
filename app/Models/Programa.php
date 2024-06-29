@@ -28,6 +28,16 @@ class Programa extends Model
         'publico_alvo' => 'array',
     ];
 
+    public function orcamentos()
+    {
+        return $this->belongsToMany(Orcamento::class, 'orcamento_programas', 'id_programa', 'id_orcamento');
+    }
+
+    public function responsavel()
+    {
+        return $this->belongsTo(Pessoa::class, 'id_criador');
+    }
+
     public function getValidoAttribute()
     {
         return $this->data_fim >= Carbon::now();

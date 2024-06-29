@@ -143,7 +143,7 @@ class UserResource extends Resource
                         ])
                         ->exporter(UserExporter::class) 
                         ->columnMapping(true),
-
+ 
                     
                     ExcelExportBulkAction::make('exportxlsx')
                         ->label('Exportar Excel')
