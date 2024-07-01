@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Resources\AuditResource;
+use App\Filament\Widgets\Details;
 use Filament\Http\Middleware\Authenticate;
 use EightyNine\Approvals\ApprovalPlugin;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -22,6 +23,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Rmsramos\Activitylog\ActivitylogPlugin;
 use Filament\Enums\ThemeMode;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -43,8 +45,8 @@ class AdminPanelProvider extends PanelProvider
             ->font('Poppins')
             ->brandName('Fundação Brilhante')
             ->brandLogo(asset('fb.png'))
-            ->brandLogoHeight(fn () => auth()->check() ? '2.8rem': '3.5rem')
-            
+            ->brandLogoHeight(fn () => auth()->check() ? '2.8rem' : '3.5rem')
+
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
@@ -54,6 +56,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+                //Details::class,
                 //Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
@@ -73,14 +76,15 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->plugins([
+                FilamentApexChartsPlugin::make(),
                 ActivitylogPlugin::make()
-                ->resource(AuditResource::class)
-                ->label('Log')
-                ->pluralLabel('Logs')
-                ->navigationGroup('Auditoria')
-                ->navigationIcon('heroicon-o-shield-check')
-                ->navigationCountBadge(true)
-                ->navigationSort(3),
+                    ->resource(AuditResource::class)
+                    ->label('Log')
+                    ->pluralLabel('Logs')
+                    ->navigationGroup('Auditoria')
+                    ->navigationIcon('heroicon-o-shield-check')
+                    ->navigationCountBadge(true)
+                    ->navigationSort(3),
             ]);
     }
 }

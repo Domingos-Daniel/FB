@@ -12,6 +12,7 @@ class gasto extends Model
         'id_programa',
         'id_orcamento',
         'id_subprograma',
+        'id_subprograma_pessoa',
         'valor_gasto',
         'created_at',
         'updated_at',
