@@ -5,10 +5,14 @@
         <h2 class="font-bold">Informações Pessoais</h2>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-4 mt-4">
 
         <div>
-            <p>{{ auth()->user()->email }}</p>
+            <p>Emiail: {{ auth()->user()->email }}</p>
+        </div>
+
+        <div>
+            <p>Nome: {{ auth()->user()->name }}</p>
         </div>
 
     </div>

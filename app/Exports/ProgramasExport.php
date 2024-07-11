@@ -6,10 +6,9 @@ use App\Models\Programa;
 use Illuminate\Database\Eloquent\Collection;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ProgramasExport implements FromCollection, WithMapping, WithHeadings
+class ProgramasExport implements FromCollection, WithMapping
 {
     
     use Exportable;
@@ -29,18 +28,8 @@ class ProgramasExport implements FromCollection, WithMapping, WithHeadings
     public function map($programa): array
     {
         return [
-            $programa->nome,
-            $programa->objetivo,
-            $programa->responsavel,
         ];
     }
 
-    public function headings(): array
-    {
-        return [
-            'Nome do Programa',
-            'Objetivo',
-            'Responsável',
-        ];
-    }
+    
 }

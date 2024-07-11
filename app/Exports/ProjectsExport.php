@@ -75,7 +75,7 @@ class ProjectsExport implements FromCollection, WithMapping, WithStyles, ShouldA
     public function styles(Worksheet $sheet)
     {
         // Título na célula A2
-        $sheet->setCellValue('A3', 'PROJECTOS DE RESPONSABILIDADE SOCIAL DA ENDIAMA/FBRILHANTE SUBSECTOR DOS RECURSOS MINERAIS ANO_ACTUAL - Iº SEMESTRE ANO_ACTUAL');
+        $sheet->setCellValue('A3', 'PROJECTOS DE RESPONSABILIDADE SOCIAL DA ENDIAMA/FBRILHANTE SUBSECTOR DOS RECURSOS MINERAIS '.date('Y').' - Iº SEMESTRE ANO_ACTUAL');
         $sheet->mergeCells('A3:O3');
         $sheet->getStyle('A3')->applyFromArray([
             'font' => ['name' => 'Arial', 'bold' => true, 'size' => 14],
